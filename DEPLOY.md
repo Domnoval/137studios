@@ -36,14 +36,26 @@
 - **Custom Cursor** - Consciousness trail effect
 - **Print-on-Demand API** - `/api/checkout` endpoint ready
 
-## 🔮 ENVIRONMENT VARIABLES (Optional):
+## 🔮 ENVIRONMENT VARIABLES:
 
-If you want to add real payments later:
+### Required for AI Features:
+```bash
+OPENAI_API_KEY=sk-...
 ```
+
+### Optional for Payments:
+```bash
 STRIPE_SECRET_KEY=sk_...
 STRIPE_PUBLISHABLE_KEY=pk_...
 PRINTFUL_API_KEY=...
 ```
+
+### How to Add in Vercel:
+1. Go to your deployed project → Settings → Environment Variables
+2. Add `OPENAI_API_KEY` with your OpenAI API key
+3. Redeploy to activate AI descriptions
+
+**Without OpenAI key:** Falls back to mystical pre-written descriptions (still works great!)
 
 ## 🌟 POST-DEPLOYMENT:
 

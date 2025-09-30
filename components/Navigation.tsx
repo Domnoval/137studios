@@ -2,9 +2,12 @@
 
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import ArtistAdmin from './ArtistAdmin';
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
   const { scrollY } = useScroll();
   const backgroundColor = useTransform(
     scrollY,
@@ -61,16 +64,27 @@ export default function Navigation() {
             ))}
           </div>
 
-          {/* Oracle Button */}
+          {/* Oracle Button - secret admin trigger */}
           <motion.button
             whileHover={{ scale: 1.05, rotate: 180 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              setClickCount(prev => prev + 1);
+              if (clickCount >= 6) { // 7 clicks = 137
+                setShowAdmin(true);
+                setClickCount(0);
+              }
+              setTimeout(() => setClickCount(0), 3000); // Reset after 3 seconds
+            }}
             className="w-10 h-10 rounded-full bg-gradient-to-r from-cosmic-astral to-cosmic-aura flex items-center justify-center"
           >
             <span className="text-white text-xl">☉</span>
           </motion.button>
         </div>
       </div>
+
+      {/* Hidden Admin Panel */}
+      {showAdmin && <ArtistAdmin />}
     </motion.nav>
   );
 }

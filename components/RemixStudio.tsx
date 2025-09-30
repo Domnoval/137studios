@@ -30,6 +30,8 @@ export default function RemixStudio() {
   const [rotation, setRotation] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedTitle, setGeneratedTitle] = useState('');
+  const [generatedDescription, setGeneratedDescription] = useState('');
+  const [mysticalProps, setMysticalProps] = useState<any>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   const toggleArtwork = (id: number) => {
@@ -50,14 +52,36 @@ export default function RemixStudio() {
 
   const handleGenerate = async () => {
     if (selectedArtworks.length < 2) {
-      alert('Select at least 2 artworks to remix!');
+      alert('Select at least 2 of my artworks to remix!');
       return;
     }
 
     setIsGenerating(true);
-    setGeneratedTitle(generateTitle());
+    const newTitle = generateTitle();
+    setGeneratedTitle(newTitle);
 
-    // Simulate AI processing
+    try {
+      // Get AI description
+      const selectedArtworkData = sourceArtworks.filter(a => selectedArtworks.includes(a.id));
+      const response = await fetch('/api/ai-describe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artworkTitles: selectedArtworkData.map(a => a.title),
+          blendMode,
+          intensity
+        })
+      });
+
+      const aiData = await response.json();
+      // Store AI description for display
+      setGeneratedDescription(aiData.description);
+      setMysticalProps(aiData.mysticalProperties);
+
+    } catch (error) {
+      console.error('AI failed:', error);
+    }
+
     setTimeout(() => {
       setIsGenerating(false);
     }, 3000);
@@ -107,7 +131,8 @@ export default function RemixStudio() {
           <div className="space-y-8">
             {/* Artwork Selector */}
             <div>
-              <h3 className="text-xl font-bold text-cosmic-glow mb-4">Select Artworks to Remix</h3>
+              <h3 className="text-xl font-bold text-cosmic-glow mb-4">Select MY Artworks to Remix</h3>
+              <p className="text-cosmic-light text-sm mb-4">Choose from the 137studios collection to create your unique blend</p>
               <div className="grid grid-cols-3 gap-4">
                 {sourceArtworks.map(artwork => (
                   <motion.div
@@ -125,6 +150,11 @@ export default function RemixStudio() {
                       className="w-full h-20 rounded mb-2"
                       style={{ backgroundColor: artwork.baseColor }}
                     />
+                    {selectedArtworks.includes(artwork.id) && (
+                      <div className="absolute inset-0 bg-cosmic-plasma/20 rounded flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">✓</span>
+                      </div>
+                    )}
                     <p className="text-xs text-cosmic-light text-center">{artwork.title}</p>
                   </motion.div>
                 ))}
@@ -219,9 +249,26 @@ export default function RemixStudio() {
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-4"
                 >
-                  <div className="p-4 bg-cosmic-void/50 rounded-lg border border-cosmic-aura">
-                    <p className="text-sm text-cosmic-light mb-1">Your Remix:</p>
-                    <p className="text-xl font-bold text-cosmic-glow">{generatedTitle}</p>
+                  <div className="p-4 bg-cosmic-void/50 rounded-lg border border-cosmic-aura space-y-3">
+                    <div>
+                      <p className="text-sm text-cosmic-light mb-1">Your Remix:</p>
+                      <p className="text-xl font-bold text-cosmic-glow">{generatedTitle}</p>
+                    </div>
+
+                    {generatedDescription && (
+                      <div>
+                        <p className="text-sm text-cosmic-light mb-1">AI Oracle Says:</p>
+                        <p className="text-sm text-cosmic-glow italic">{generatedDescription}</p>
+                      </div>
+                    )}
+
+                    {mysticalProps && (
+                      <div className="text-xs text-cosmic-aura space-y-1">
+                        <div>🔮 Vibrational Frequency: {mysticalProps.vibrationalFreq}</div>
+                        <div>🌌 Dimensional Depth: {mysticalProps.dimensionalDepth}</div>
+                        <div>⚡ Sacred Geometry: {mysticalProps.sacredGeometry}</div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
