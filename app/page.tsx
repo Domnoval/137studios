@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import SacredGeometry from '@/components/SacredGeometry';
 import HeroSection from '@/components/HeroSection';
-import GallerySection from '@/components/GallerySection';
+import EtherealGallery from '@/components/EtherealGallery';
 import InstallationSection from '@/components/InstallationSection';
 import Navigation from '@/components/Navigation';
 import CursorTrail from '@/components/CursorTrail';
@@ -47,8 +47,8 @@ export default function Home() {
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Gallery */}
-      <GallerySection />
+      {/* Ethereal Gallery */}
+      <EtherealGallery />
 
       {/* Interactive Installations */}
       <InstallationSection />
