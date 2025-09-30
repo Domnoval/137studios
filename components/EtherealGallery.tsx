@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, Suspense } from 'react';
+import { useState, useRef, Suspense, useMemo } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Float, Text, Environment, Html } from '@react-three/drei';
@@ -148,13 +148,21 @@ function ParticleField() {
   const pointsRef = useRef<THREE.Points>(null);
 
   const particlesCount = 200;
-  const positions = new Float32Array(particlesCount * 3);
+  const positions = useMemo(() => {
+    const pos = new Float32Array(particlesCount * 3);
 
-  for (let i = 0; i < particlesCount; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 50;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 50;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
-  }
+    for (let i = 0; i < particlesCount; i++) {
+      // Use deterministic positions based on index
+      const angle = (i * 137.5) % 360; // Golden angle
+      const radius = (i * 0.7) % 25;
+      const height = (i * 0.3) % 10 - 5;
+
+      pos[i * 3] = Math.cos(angle * Math.PI / 180) * radius;
+      pos[i * 3 + 1] = Math.sin(angle * Math.PI / 180) * radius;
+      pos[i * 3 + 2] = height;
+    }
+    return pos;
+  }, []);
 
   useFrame((state) => {
     if (pointsRef.current) {
