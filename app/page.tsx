@@ -8,6 +8,8 @@ import GallerySection from '@/components/GallerySection';
 import InstallationSection from '@/components/InstallationSection';
 import Navigation from '@/components/Navigation';
 import CursorTrail from '@/components/CursorTrail';
+import RemixStudio from '@/components/RemixStudio';
+import AIOracle from '@/components/AIOracle';
 
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -29,6 +31,7 @@ export default function Home() {
   return (
     <div ref={containerRef} className="min-h-screen bg-cosmic-void text-cosmic-glow overflow-x-hidden">
       <CursorTrail />
+      <AIOracle />
 
       {/* Sacred Geometry Background */}
       <motion.div
@@ -49,6 +52,9 @@ export default function Home() {
 
       {/* Interactive Installations */}
       <InstallationSection />
+
+      {/* AI Remix Studio */}
+      <RemixStudio />
 
       {/* Oracle Footer */}
       <footer className="relative z-10 py-24 text-center">

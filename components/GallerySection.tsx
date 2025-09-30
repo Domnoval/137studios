@@ -1,8 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image';
+import dynamic from 'next/dynamic';
+
+const Artwork3D = dynamic(() => import('./Artwork3D'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-cosmic-plasma border-t-transparent rounded-full animate-spin" />
+    </div>
+  ),
+});
 
 const artworks = [
   { id: 1, title: "Cosmic Birth", category: "painting", size: "72x48", medium: "Acrylic on Canvas", year: 2024, price: "$8,888" },
@@ -74,20 +83,9 @@ export default function GallerySection() {
                 className="relative group cursor-pointer"
               >
                 <div className="aspect-[4/5] bg-gradient-to-br from-cosmic-nebula to-cosmic-astral rounded-lg overflow-hidden">
-                  {/* Placeholder for artwork image */}
-                  <div className="w-full h-full flex items-center justify-center">
-                    <motion.div
-                      animate={{
-                        rotate: hoveredId === artwork.id ? 360 : 0,
-                      }}
-                      transition={{ duration: 10, ease: "linear" }}
-                      className="text-6xl"
-                    >
-                      {artwork.category === "painting" && "🎨"}
-                      {artwork.category === "digital" && "💻"}
-                      {artwork.category === "print" && "🖼️"}
-                      {artwork.category === "installation" && "🔮"}
-                    </motion.div>
+                  {/* 3D Artwork */}
+                  <div className="w-full h-full">
+                    <Artwork3D type={artwork.category as 'painting' | 'digital' | 'print' | 'installation'} />
                   </div>
 
                   {/* Hover Overlay */}
