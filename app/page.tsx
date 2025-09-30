@@ -5,7 +5,6 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import SacredGeometry from '@/components/SacredGeometry';
 import HeroSection from '@/components/HeroSection';
 import EtherealGallery from '@/components/EtherealGallery';
-import InstallationSection from '@/components/InstallationSection';
 import Navigation from '@/components/Navigation';
 import CursorTrail from '@/components/CursorTrail';
 import RemixStudio from '@/components/RemixStudio';
@@ -50,8 +49,6 @@ export default function Home() {
       {/* Ethereal Gallery */}
       <EtherealGallery />
 
-      {/* Interactive Installations */}
-      <InstallationSection />
 
       {/* AI Remix Studio */}
       <RemixStudio />
