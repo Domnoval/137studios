@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useMemo } from 'react';
 
 const installations = [
   {
@@ -21,6 +21,29 @@ const installations = [
   },
 ];
 
+// Generate stable particle positions using a seeded approach
+function generateParticles(seed: number, count: number) {
+  const particles = [];
+  for (let i = 0; i < count; i++) {
+    // Use deterministic values based on index and seed
+    const angle = (i * 137.5) % 360; // Golden angle
+    const radius = ((i * 7) % 50) + 25;
+    const x = 50 + radius * Math.cos(angle * Math.PI / 180);
+    const y = 50 + radius * Math.sin(angle * Math.PI / 180);
+
+    particles.push({
+      id: i,
+      x: `${x}%`,
+      y: `${y}%`,
+      animateX: [(i % 3 - 1) * 100, (i % 3 - 1) * -100],
+      animateY: [(i % 2) * 100 - 50, (i % 2) * -100 + 50],
+      duration: 3 + (i % 3),
+      delay: (i % 4) * 0.5,
+    });
+  }
+  return particles;
+}
+
 export default function InstallationSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -29,6 +52,12 @@ export default function InstallationSection() {
   });
 
   const x = useTransform(scrollYProgress, [0, 1], ['-100%', '100%']);
+
+  // Generate particles once on mount
+  const particleGroups = useMemo(() =>
+    installations.map((_, index) => generateParticles(index, 20)),
+    []
+  );
 
   return (
     <section ref={containerRef} className="relative z-10 py-24 overflow-hidden">
@@ -85,40 +114,41 @@ export default function InstallationSection() {
                     whileHover={{ scale: 1.02 }}
                     className="relative aspect-video bg-gradient-to-br from-cosmic-nebula to-cosmic-void rounded-lg overflow-hidden"
                   >
-                    {/* Animated particles */}
+                    {/* Animated particles with stable positions */}
                     <div className="absolute inset-0">
-                      {[...Array(20)].map((_, i) => (
+                      {particleGroups[index].map((particle) => (
                         <motion.div
-                          key={i}
+                          key={particle.id}
                           animate={{
-                            x: [0, Math.random() * 200 - 100],
-                            y: [0, Math.random() * 200 - 100],
+                            x: particle.animateX,
+                            y: particle.animateY,
                             opacity: [0, 1, 0],
                           }}
                           transition={{
-                            duration: 3 + Math.random() * 2,
+                            duration: particle.duration,
                             repeat: Infinity,
-                            delay: Math.random() * 2,
+                            delay: particle.delay,
+                            ease: "easeInOut"
                           }}
                           className="absolute w-1 h-1 bg-cosmic-light rounded-full"
                           style={{
-                            left: `${Math.random() * 100}%`,
-                            top: `${Math.random() * 100}%`,
+                            left: particle.x,
+                            top: particle.y,
                           }}
                         />
                       ))}
                     </div>
 
-                    {/* Center icon */}
+                    {/* Center icon - using text instead of emoji for stability */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                        className="text-6xl opacity-30"
+                        className="text-4xl font-bold text-cosmic-aura opacity-30"
                       >
-                        {index === 0 && "👁️"}
-                        {index === 1 && "🧠"}
-                        {index === 2 && "✨"}
+                        {index === 0 && "SENSE"}
+                        {index === 1 && "THINK"}
+                        {index === 2 && "GLOW"}
                       </motion.div>
                     </div>
                   </motion.div>
