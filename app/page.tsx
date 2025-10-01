@@ -12,6 +12,8 @@ import AIOracle from '@/components/AIOracle';
 
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [clickCount, setClickCount] = useState(0);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll();
 
@@ -26,6 +28,28 @@ export default function Home() {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
+
+  const handleSecretClick = () => {
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+
+    // Clear existing timeout
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+
+    // Check if 7 clicks reached
+    if (newCount === 7) {
+      // Redirect to admin login
+      window.location.href = '/admin/login';
+      setClickCount(0);
+    } else {
+      // Reset counter after 3 seconds of no clicks
+      clickTimeoutRef.current = setTimeout(() => {
+        setClickCount(0);
+      }, 3000);
+    }
+  };
 
   return (
     <div ref={containerRef} className="min-h-screen bg-cosmic-void text-cosmic-glow overflow-x-hidden">
@@ -57,10 +81,20 @@ export default function Home() {
       <footer className="relative z-10 py-24 text-center">
         <motion.div
           whileHover={{ scale: 1.1 }}
+          onClick={handleSecretClick}
           className="inline-block cursor-pointer mb-8"
         >
           <p className="text-cosmic-aura font-mono">✧ 137 ✧</p>
           <p className="text-xs text-cosmic-light opacity-50">The fine structure constant speaks</p>
+          {clickCount > 0 && (
+            <motion.p
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-xs text-cosmic-plasma mt-2"
+            >
+              {clickCount}/7
+            </motion.p>
+          )}
         </motion.div>
 
         {/* Legal Links */}
