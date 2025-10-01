@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Send welcome email asynchronously (don't block registration if email fails)
-    emailService.sendWelcomeEmail(user.email, user.name).catch(error => {
+    emailService.sendWelcomeEmail(user.email, user.name || 'Cosmic Traveler').catch(error => {
       console.error('Failed to send welcome email:', error);
       // Could log this to an error monitoring service
     });
