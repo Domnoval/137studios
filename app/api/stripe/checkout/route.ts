@@ -3,11 +3,10 @@ import Stripe from 'stripe';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-09-30.clover',
-});
-
 export async function POST(request: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2025-09-30.clover',
+  });
   try {
     const session = await getServerSession(authOptions);
     const { items, successUrl, cancelUrl } = await request.json();
@@ -69,6 +68,10 @@ export async function POST(request: NextRequest) {
 
 // Webhook handler for Stripe events
 export async function PUT(request: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2025-09-30.clover',
+  });
+
   const body = await request.text();
   const signature = request.headers.get('stripe-signature')!;
 

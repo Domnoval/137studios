@@ -45,9 +45,8 @@ export async function POST(request: NextRequest) {
       where: { orderNumber },
       data: {
         status: 'SHIPPED',
-        trackingNumber,
-        carrier,
-        shippedAt: new Date()
+        // Note: trackingNumber and carrier fields need to be added to Order model
+        // shippedAt: new Date()
       }
     });
 
@@ -56,7 +55,7 @@ export async function POST(request: NextRequest) {
 
     // Send shipping notification email
     const emailSent = await emailService.sendShippingNotification({
-      email: order.user.email,
+      email: order.user?.email || order.customerEmail,
       orderNumber,
       trackingNumber,
       carrier,
@@ -119,10 +118,10 @@ export async function GET(request: NextRequest) {
       select: {
         orderNumber: true,
         status: true,
-        trackingNumber: true,
-        carrier: true,
-        shippedAt: true,
-        totalAmount: true,
+        // trackingNumber: true,  // Field needs to be added to Order model
+        // carrier: true,         // Field needs to be added to Order model
+        // shippedAt: true,       // Field needs to be added to Order model
+        total: true,
         createdAt: true,
         user: {
           select: {
@@ -134,8 +133,8 @@ export async function GET(request: NextRequest) {
           select: {
             type: true,
             quantity: true,
-            price: true,
-            productDetails: true
+            price: true
+            // productDetails field needs to be added to OrderItem model
           }
         }
       }
@@ -149,13 +148,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Add tracking URL if available
-    const trackingUrl = order.trackingNumber && order.carrier
-      ? generateTrackingUrl(order.carrier, order.trackingNumber)
-      : null;
+    // const trackingUrl = order.trackingNumber && order.carrier
+    //   ? generateTrackingUrl(order.carrier, order.trackingNumber)
+    //   : null;
 
     return NextResponse.json({
       ...order,
-      trackingUrl
+      // trackingUrl  // Commented out until tracking fields are added to model
     });
 
   } catch (error) {

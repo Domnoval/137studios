@@ -3,15 +3,15 @@ import Stripe from 'stripe';
 import { PrismaClient } from '@prisma/client';
 import { emailService } from '@/lib/email';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-09-30.clover',
-});
-
 const prisma = new PrismaClient();
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(request: NextRequest) {
   try {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+      apiVersion: '2025-09-30.clover',
+    });
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
     const body = await request.text();
     const signature = request.headers.get('stripe-signature')!;
 
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     // Handle the event
     switch (event.type) {
       case 'checkout.session.completed':
-        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session, stripe);
         break;
 
       case 'payment_intent.succeeded':
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session, stripe: Stripe) {
   try {
     console.log('✨ Processing completed checkout:', session.id);
 
@@ -182,8 +182,10 @@ async function saveOrder(orderData: {
       data: {
         orderNumber: orderData.orderNumber,
         userId: user.id,
-        status: 'CONFIRMED',
-        totalAmount: orderData.amount / 100, // Convert from cents
+        customerEmail: orderData.customerEmail,
+        customerName: orderData.customerName,
+        status: 'PAID',
+        total: orderData.amount / 100, // Convert from cents
         shippingAddress: orderData.shippingAddress,
         stripeSessionId: orderData.stripeSessionId,
         items: {

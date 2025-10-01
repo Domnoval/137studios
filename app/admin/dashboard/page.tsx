@@ -7,7 +7,8 @@ import { useRouter } from 'next/navigation';
 import EnhancedArtistAdmin from '@/components/EnhancedArtistAdmin';
 
 export default function AdminDashboard() {
-  const { data: session, status } = useSession();
+  const sessionResult = useSession();
+  const { data: session, status } = sessionResult || { data: null, status: 'loading' };
   const router = useRouter();
   const [showUpload, setShowUpload] = useState(false);
 

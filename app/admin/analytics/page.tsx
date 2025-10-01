@@ -49,7 +49,8 @@ interface AnalyticsData {
 }
 
 export default function AdminAnalytics() {
-  const { data: session, status } = useSession();
+  const sessionResult = useSession();
+  const { data: session, status } = sessionResult || { data: null, status: 'loading' };
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('30d');
