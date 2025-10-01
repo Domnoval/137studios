@@ -66,7 +66,7 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set(
     'Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live https://va.vercel-scripts.com; " +
+    "script-src 'self' https://vercel.live https://va.vercel-scripts.com; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: blob: https://*.vercel-storage.com; " +
     "font-src 'self' data:; " +
