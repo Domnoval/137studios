@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useState, useEffect } from 'react';
-import ArtistAdmin from './ArtistAdmin';
+import SimpleAdmin from './SimpleAdmin';
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -69,12 +69,20 @@ export default function Navigation() {
             whileHover={{ scale: 1.05, rotate: 180 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
-              setClickCount(prev => prev + 1);
-              if (clickCount >= 6) { // 7 clicks = 137
+              const newCount = clickCount + 1;
+              setClickCount(newCount);
+              console.log(`Click ${newCount}/7`);
+
+              if (newCount >= 7) {
+                console.log('Opening admin!');
                 setShowAdmin(true);
                 setClickCount(0);
               }
-              setTimeout(() => setClickCount(0), 3000); // Reset after 3 seconds
+
+              // Reset counter after 3 seconds
+              setTimeout(() => {
+                setClickCount(0);
+              }, 3000);
             }}
             className="w-10 h-10 rounded-full bg-gradient-to-r from-cosmic-astral to-cosmic-aura flex items-center justify-center"
           >
@@ -84,7 +92,7 @@ export default function Navigation() {
       </div>
 
       {/* Hidden Admin Panel */}
-      {showAdmin && <ArtistAdmin />}
+      {showAdmin && <SimpleAdmin />}
     </motion.nav>
   );
 }
