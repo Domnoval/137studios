@@ -100,6 +100,44 @@ export default function RemixStudio() {
     link.click();
   };
 
+  const handleOrderPrint = async () => {
+    if (!generatedTitle) {
+      alert('Please generate a remix first!');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          artworkId: `remix-${Date.now()}`,
+          artworkTitle: generatedTitle,
+          remixData: {
+            selectedArtworks,
+            blendMode,
+            intensity,
+            distortion,
+            rotation
+          },
+          printSize: 'standard',
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.checkoutUrl) {
+        // Redirect to Stripe checkout
+        window.location.href = data.checkoutUrl;
+      } else {
+        alert(data.error || 'Failed to create checkout session');
+      }
+    } catch (error) {
+      console.error('Order error:', error);
+      alert('Failed to process order. Please try again.');
+    }
+  };
+
   const selectedArtworkData = sourceArtworks.filter(a => selectedArtworks.includes(a.id));
   const blendedColor = selectedArtworkData.length > 0
     ? `#${Math.floor(
@@ -278,7 +316,10 @@ export default function RemixStudio() {
                     >
                       Save Image
                     </button>
-                    <button className="py-3 bg-mystic-gold text-cosmic-void rounded-full font-bold hover:bg-mystic-gold/90">
+                    <button
+                      onClick={handleOrderPrint}
+                      className="py-3 bg-mystic-gold text-cosmic-void rounded-full font-bold hover:bg-mystic-gold/90"
+                    >
                       Order Print $137
                     </button>
                   </div>

@@ -1,42 +1,57 @@
 import { NextResponse } from 'next/server';
+import { createCheckoutSession } from '@/lib/stripe';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { artworkId, remixData, printSize, userEmail } = body;
+    const { artworkId, artworkTitle, remixData, printSize, userEmail } = body;
 
-    // Here you'd integrate with:
-    // 1. Stripe for payment processing
-    // 2. Print-on-demand service (Printful, Printify, etc.)
-    // 3. Database to store order info
+    // Validate inputs
+    if (!artworkId || !artworkTitle) {
+      return NextResponse.json(
+        { success: false, error: 'Artwork ID and title are required' },
+        { status: 400 }
+      );
+    }
 
-    // For now, we'll simulate the order
-    const order = {
-      id: `ORDER-${Date.now()}`,
+    const price = 137; // The mystical price
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+
+    // Create Stripe checkout session
+    const session = await createCheckoutSession({
+      artworkTitle,
       artworkId,
-      remixData,
-      printSize,
+      price,
       userEmail,
-      status: 'pending',
-      price: 137, // The mystical price
-      createdAt: new Date().toISOString(),
-    };
+      successUrl: `${baseUrl}/order/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${baseUrl}/?canceled=true`,
+    });
 
-    // In production, you'd:
-    // 1. Create Stripe checkout session
-    // 2. Save order to database
-    // 3. Send confirmation email
+    // Log order for tracking (in production, save to database)
+    console.log('Order created:', {
+      sessionId: session.id,
+      artworkId,
+      artworkTitle,
+      price,
+      userEmail,
+      printSize,
+      remixData: remixData ? 'included' : 'none',
+    });
 
     return NextResponse.json({
       success: true,
-      order,
-      checkoutUrl: `https://checkout.stripe.com/fake-session-${order.id}`,
+      sessionId: session.id,
+      checkoutUrl: session.url,
       message: 'Your artistic vision is manifesting into physical reality...'
     });
 
   } catch (error) {
+    console.error('Checkout error:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to initiate cosmic transaction' },
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to initiate cosmic transaction'
+      },
       { status: 500 }
     );
   }
