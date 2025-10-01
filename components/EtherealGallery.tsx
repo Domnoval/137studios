@@ -35,79 +35,80 @@ function FloatingArtwork({ artwork, position, index, onClick, isSelected }: {
   isSelected: boolean;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
-  const { viewport } = useThree();
+  const groupRef = useRef<THREE.Group>(null);
 
+  // Memoize expensive calculations
+  const floatOffset = useMemo(() => index * 0.5, [index]);
+  const particlePositions = useMemo(() =>
+    Array.from({ length: 3 }, (_, i) => [ // Reduced from 5 to 3 particles
+      Math.sin(i * 2.1) * 1.5, // Closer to artwork
+      Math.cos(i * 2.1) * 1.5,
+      Math.sin(i) * 0.3
+    ] as [number, number, number])
+  , []);
+
+  // Optimized animation - throttled updates
   useFrame((state) => {
     if (meshRef.current && !isSelected) {
-      // Gentle floating animation
-      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime + index) * 0.2;
-      meshRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.5 + index) * 0.1;
+      // Update every other frame for performance
+      if (Math.floor(state.clock.elapsedTime * 30) % 2 === 0) {
+        meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime + floatOffset) * 0.15;
+        meshRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3 + floatOffset) * 0.05;
+      }
     }
   });
 
   return (
-    <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
-      <group position={position}>
-        {/* Artwork Panel */}
-        <mesh
-          ref={meshRef}
-          onClick={onClick}
-          scale={isSelected ? [2, 2, 0.1] : [1.5, 1.8, 0.1]}
-        >
-          <boxGeometry args={[1, 1, 0.05]} />
-          <meshPhysicalMaterial
-            color={artwork.color}
-            roughness={0.1}
-            metalness={0.8}
-            clearcoat={1}
-            clearcoatRoughness={0}
-            transmission={0.1}
-            thickness={0.5}
-          />
+    <group ref={groupRef} position={position}>
+      {/* Artwork Panel */}
+      <mesh
+        ref={meshRef}
+        onClick={onClick}
+        scale={isSelected ? [1.8, 1.8, 0.1] : [1.3, 1.5, 0.1]} // Reduced scale for performance
+      >
+        <boxGeometry args={[1, 1, 0.05]} />
+        <meshStandardMaterial // Use standard material for better performance
+          color={artwork.color}
+          roughness={0.2}
+          metalness={0.6}
+        />
+      </mesh>
+
+      {/* Simplified Glowing Frame */}
+      <mesh position={[0, 0, 0.03]} scale={[1.4, 1.6, 0.02]}>
+        <planeGeometry args={[1, 1]} />
+        <meshBasicMaterial color="#fbbf24" transparent opacity={0.2} />
+      </mesh>
+
+      {/* Reduced Floating Particles */}
+      {particlePositions.map((pos, i) => (
+        <mesh key={i} position={pos}>
+          <sphereGeometry args={[0.015, 6, 6]} /> {/* Lower quality spheres */}
+          <meshBasicMaterial color="#c084fc" />
         </mesh>
+      ))}
 
-        {/* Glowing Frame */}
-        <mesh position={[0, 0, 0.03]} scale={[1.6, 1.9, 0.02]}>
-          <boxGeometry args={[1, 1, 0.02]} />
-          <meshBasicMaterial color="#fbbf24" transparent opacity={0.3} />
-        </mesh>
-
-        {/* Floating Particles around artwork */}
-        {[...Array(5)].map((_, i) => (
-          <mesh
-            key={i}
-            position={[
-              Math.sin(i * 2) * 2,
-              Math.cos(i * 2) * 2,
-              Math.sin(i) * 0.5
-            ]}
-          >
-            <sphereGeometry args={[0.02, 8, 8]} />
-            <meshBasicMaterial color="#c084fc" />
-          </mesh>
-        ))}
-
-        {/* Title Text */}
-        <Html position={[0, -1.2, 0]} center>
+      {/* Title Text - Only show when not selected to reduce DOM updates */}
+      {!isSelected && (
+        <Html position={[0, -1.0, 0]} center>
           <div className="text-center pointer-events-none">
-            <p className="text-cosmic-glow text-sm font-bold">{artwork.title}</p>
-            <p className="text-cosmic-light text-xs">{artwork.year}</p>
+            <p className="text-cosmic-glow text-xs font-bold">{artwork.title}</p>
           </div>
         </Html>
+      )}
 
-        {/* Category Indicator */}
-        <mesh position={[0, 1.1, 0]}>
-          <sphereGeometry args={[0.1, 16, 16]} />
-          <meshBasicMaterial
-            color={
-              artwork.category === 'painting' ? '#9333ea' :
-              artwork.category === 'digital' ? '#00ffff' :
-              artwork.category === 'print' ? '#fbbf24' : '#6b46c1'
-            }
-          />
-        </mesh>
-      </group>
-    </Float>
+      {/* Simplified Category Indicator */}
+      <mesh position={[0, 0.9, 0]}>
+        <sphereGeometry args={[0.08, 8, 8]} /> {/* Lower quality sphere */}
+        <meshBasicMaterial
+          color={
+            artwork.category === 'painting' ? '#9333ea' :
+            artwork.category === 'digital' ? '#00ffff' :
+            artwork.category === 'print' ? '#fbbf24' : '#6b46c1'
+          }
+        />
+      </mesh>
+    </group>
   );
 }
 
@@ -146,27 +147,39 @@ function CentralSymbol() {
 
 function ParticleField() {
   const pointsRef = useRef<THREE.Points>(null);
+  const { viewport } = useThree();
 
-  const particlesCount = 200;
+  // Reduced particle count for better performance
+  const particlesCount = useMemo(() => {
+    // Adaptive particle count based on viewport size
+    const baseCount = 100;
+    const sizeFactor = Math.min(viewport.width / 10, 2);
+    return Math.floor(baseCount * sizeFactor);
+  }, [viewport.width]);
+
   const positions = useMemo(() => {
     const pos = new Float32Array(particlesCount * 3);
 
     for (let i = 0; i < particlesCount; i++) {
-      // Use deterministic positions based on index
+      // Use deterministic positions based on golden angle
       const angle = (i * 137.5) % 360; // Golden angle
-      const radius = (i * 0.7) % 25;
-      const height = (i * 0.3) % 10 - 5;
+      const radius = (i * 0.5) % 20; // Reduced radius for tighter formation
+      const height = (i * 0.2) % 8 - 4; // Reduced height variation
 
       pos[i * 3] = Math.cos(angle * Math.PI / 180) * radius;
       pos[i * 3 + 1] = Math.sin(angle * Math.PI / 180) * radius;
       pos[i * 3 + 2] = height;
     }
     return pos;
-  }, []);
+  }, [particlesCount]);
 
+  // Optimized animation with frame rate limiting
   useFrame((state) => {
     if (pointsRef.current) {
-      pointsRef.current.rotation.y = state.clock.elapsedTime * 0.05;
+      // Limit rotation updates to 30fps for performance
+      if (state.clock.elapsedTime % (1/30) < 0.016) {
+        pointsRef.current.rotation.y = state.clock.elapsedTime * 0.03; // Slower rotation
+      }
     }
   });
 
@@ -178,14 +191,16 @@ function ParticleField() {
           count={particlesCount}
           array={positions}
           itemSize={3}
+          args={[positions, 3]}
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.05}
+        size={0.04} // Slightly smaller particles
         color="#c084fc"
         transparent
-        opacity={0.6}
+        opacity={0.5} // Reduced opacity for subtlety
         sizeAttenuation
+        vertexColors={false} // Disable for performance
       />
     </points>
   );
@@ -217,11 +232,22 @@ export default function EtherealGallery() {
   return (
     <section className="relative min-h-screen py-24">
       <div className="absolute inset-0">
-        <Canvas camera={{ position: [0, 0, 15], fov: 75 }}>
+        <Canvas
+          camera={{ position: [0, 0, 15], fov: 75 }}
+          gl={{
+            antialias: false, // Disable for better performance
+            alpha: true,
+            powerPreference: "high-performance",
+            stencil: false,
+            depth: true
+          }}
+          performance={{ min: 0.5, max: 1, debounce: 200 }} // Adaptive performance
+          frameloop="demand" // Render only when needed
+        >
           <Suspense fallback={null}>
-            <ambientLight intensity={0.3} />
-            <pointLight position={[10, 10, 10]} intensity={1} color="#9333ea" />
-            <pointLight position={[-10, -10, 10]} intensity={0.5} color="#fbbf24" />
+            {/* Simplified lighting for performance */}
+            <ambientLight intensity={0.4} />
+            <directionalLight position={[5, 5, 5]} intensity={0.8} color="#9333ea" />
 
             {/* Particle Field */}
             <ParticleField />
@@ -241,7 +267,8 @@ export default function EtherealGallery() {
               />
             ))}
 
-            <Environment preset="night" />
+            {/* Simplified environment */}
+            <fog attach="fog" args={['#0a0a0a', 10, 50]} />
           </Suspense>
         </Canvas>
       </div>

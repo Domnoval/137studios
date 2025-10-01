@@ -57,11 +57,24 @@ export default function Home() {
       <footer className="relative z-10 py-24 text-center">
         <motion.div
           whileHover={{ scale: 1.1 }}
-          className="inline-block cursor-pointer"
+          className="inline-block cursor-pointer mb-8"
         >
           <p className="text-cosmic-aura font-mono">✧ 137 ✧</p>
           <p className="text-xs text-cosmic-light opacity-50">The fine structure constant speaks</p>
         </motion.div>
+
+        {/* Legal Links */}
+        <div className="flex justify-center gap-8 text-sm text-cosmic-light">
+          <a href="/privacy" className="hover:text-cosmic-aura transition-colors">
+            Privacy Policy
+          </a>
+          <a href="/terms" className="hover:text-cosmic-aura transition-colors">
+            Terms of Service
+          </a>
+          <span className="text-cosmic-light/30">
+            © {new Date().getFullYear()} 137studios
+          </span>
+        </div>
       </footer>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dynamic from 'next/dynamic';
+import ArtworkSearch from './ArtworkSearch';
 
 const Artwork3D = dynamic(() => import('./Artwork3D'), {
   ssr: false,
@@ -14,23 +15,89 @@ const Artwork3D = dynamic(() => import('./Artwork3D'), {
 });
 
 const artworks = [
-  { id: 1, title: "Cosmic Birth", category: "painting", size: "72x48", medium: "Acrylic on Canvas", year: 2024, price: "$8,888" },
-  { id: 2, title: "Digital Ayahuasca", category: "digital", size: "∞x∞", medium: "Generative Algorithm", year: 2024, price: "ETH 1.37" },
-  { id: 3, title: "Void Walker", category: "painting", size: "96x72", medium: "Mixed Media", year: 2023, price: "$13,700" },
-  { id: 4, title: "Consciousness.exe", category: "installation", size: "Room Scale", medium: "Interactive Projection", year: 2024, price: "Commission" },
-  { id: 5, title: "Astral Projection #7", category: "print", size: "36x24", medium: "Archival Print", year: 2024, price: "$777" },
-  { id: 6, title: "Sacred Circuitry", category: "digital", size: "Variable", medium: "AI + Human Collaboration", year: 2024, price: "$3,333" },
+  {
+    id: 1,
+    title: "Cosmic Birth",
+    category: "painting" as const,
+    size: "72x48",
+    medium: "Acrylic on Canvas",
+    year: 2024,
+    price: "$8,888",
+    description: "The universe's first breath, captured in swirling nebulas of consciousness.",
+    color: "#9333ea",
+    tags: ["nebula", "cosmic", "consciousness", "birth", "universe"]
+  },
+  {
+    id: 2,
+    title: "Digital Ayahuasca",
+    category: "digital" as const,
+    size: "∞x∞",
+    medium: "Generative Algorithm",
+    year: 2024,
+    price: "ETH 1.37",
+    description: "Machine dreams meet plant wisdom in this algorithmic vision quest.",
+    color: "#00ffff",
+    tags: ["ayahuasca", "digital", "psychedelic", "algorithm", "vision", "shamanic"]
+  },
+  {
+    id: 3,
+    title: "Void Walker",
+    category: "painting" as const,
+    size: "96x72",
+    medium: "Mixed Media",
+    year: 2023,
+    price: "$13,700",
+    description: "A figure traversing the spaces between realities, neither here nor there.",
+    color: "#1a0033",
+    tags: ["void", "liminal", "reality", "space", "figure", "traversal"]
+  },
+  {
+    id: 4,
+    title: "Consciousness.exe",
+    category: "installation" as const,
+    size: "Room Scale",
+    medium: "Interactive Projection",
+    year: 2024,
+    price: "Commission",
+    description: "Self-aware code that responds to your thoughts and emotions.",
+    color: "#fbbf24",
+    tags: ["interactive", "consciousness", "code", "projection", "responsive", "AI"]
+  },
+  {
+    id: 5,
+    title: "Astral Projection #7",
+    category: "print" as const,
+    size: "36x24",
+    medium: "Archival Print",
+    year: 2024,
+    price: "$777",
+    description: "The seventh attempt at leaving the body, documented in light.",
+    color: "#6b46c1",
+    tags: ["astral", "projection", "light", "body", "spiritual", "documentation"]
+  },
+  {
+    id: 6,
+    title: "Sacred Circuitry",
+    category: "digital" as const,
+    size: "Variable",
+    medium: "AI + Human Collaboration",
+    year: 2024,
+    price: "$3,333",
+    description: "Where ancient symbols meet quantum computing.",
+    color: "#e9d5ff",
+    tags: ["sacred", "technology", "symbols", "quantum", "collaboration", "ancient"]
+  },
 ];
 
 const categories = ["all", "painting", "digital", "print", "installation"];
 
 export default function GallerySection() {
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [hoveredId, setHoveredId] = useState<number | null>(null);
+  const [filteredArtworks, setFilteredArtworks] = useState(artworks);
 
-  const filteredArtworks = artworks.filter(
-    art => selectedCategory === "all" || art.category === selectedCategory
-  );
+  const handleFilter = (filtered: any[]) => {
+    setFilteredArtworks(filtered);
+  };
 
   return (
     <section className="relative z-10 py-24 px-8">
@@ -47,24 +114,8 @@ export default function GallerySection() {
         </h2>
         <p className="text-cosmic-light text-center mb-12">Each piece is a portal</p>
 
-        {/* Category Filter */}
-        <div className="flex justify-center gap-4 mb-16 flex-wrap">
-          {categories.map((cat) => (
-            <motion.button
-              key={cat}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-6 py-2 rounded-full transition-all ${
-                selectedCategory === cat
-                  ? 'bg-gradient-to-r from-cosmic-astral to-cosmic-aura text-white'
-                  : 'border border-cosmic-aura text-cosmic-light hover:bg-cosmic-aura hover:bg-opacity-10'
-              }`}
-            >
-              {cat.charAt(0).toUpperCase() + cat.slice(1)}
-            </motion.button>
-          ))}
-        </div>
+        {/* Advanced Search and Filtering */}
+        <ArtworkSearch artworks={artworks} onFilter={handleFilter} />
 
         {/* Gallery Grid */}
         <motion.div layout className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -1,17 +1,63 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const { artworkTitles, blendMode, intensity } = await request.json();
+    // Input validation
+    if (!request.headers.get('content-type')?.includes('application/json')) {
+      return NextResponse.json(
+        { error: 'Content-Type must be application/json' },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
+    const { artworkTitles, blendMode, intensity } = body;
+
+    // Validate required fields
+    if (!artworkTitles || !Array.isArray(artworkTitles) || artworkTitles.length === 0) {
+      return NextResponse.json(
+        { error: 'artworkTitles is required and must be a non-empty array' },
+        { status: 400 }
+      );
+    }
+
+    if (!blendMode || typeof blendMode !== 'string') {
+      return NextResponse.json(
+        { error: 'blendMode is required and must be a string' },
+        { status: 400 }
+      );
+    }
+
+    if (intensity === undefined || typeof intensity !== 'number' || intensity < 0 || intensity > 100) {
+      return NextResponse.json(
+        { error: 'intensity is required and must be a number between 0 and 100' },
+        { status: 400 }
+      );
+    }
+
+    // Sanitize inputs
+    const sanitizedTitles = artworkTitles
+      .filter(title => typeof title === 'string' && title.trim().length > 0)
+      .slice(0, 5) // Limit to 5 artworks max
+      .map(title => title.trim().substring(0, 100)); // Limit title length
+
+    const sanitizedBlendMode = blendMode.trim().substring(0, 50);
+
+    if (sanitizedTitles.length === 0) {
+      return NextResponse.json(
+        { error: 'No valid artwork titles provided' },
+        { status: 400 }
+      );
+    }
 
     // Check for OpenAI API key
     if (!process.env.OPENAI_API_KEY) {
       // Fallback to mystical descriptions without API
       const mysticalDescriptions = [
-        `A fusion of ${artworkTitles.join(' and ')}, where cosmic energies dance in ${blendMode} harmony`,
-        `The consciousness streams of ${artworkTitles.join(', ')} merge into a singular vision of interdimensional beauty`,
-        `Through ${blendMode} alchemy, ${artworkTitles.join(' & ')} transcend physical form to become pure expression`,
-        `In this ${intensity}% intensity blend, ${artworkTitles.join(' meets ')} to birth new realities`,
+        `A fusion of ${sanitizedTitles.join(' and ')}, where cosmic energies dance in ${sanitizedBlendMode} harmony`,
+        `The consciousness streams of ${sanitizedTitles.join(', ')} merge into a singular vision of interdimensional beauty`,
+        `Through ${sanitizedBlendMode} alchemy, ${sanitizedTitles.join(' & ')} transcend physical form to become pure expression`,
+        `In this ${intensity}% intensity blend, ${sanitizedTitles.join(' meets ')} to birth new realities`,
       ];
 
       return NextResponse.json({
@@ -39,7 +85,7 @@ export async function POST(request: Request) {
           content: `You are a mystical art oracle for 137studios. Create poetic, esoteric descriptions for art remixes. Be creative, use cosmic/psychedelic language, and reference consciousness, sacred geometry, and interdimensional themes.`
         }, {
           role: 'user',
-          content: `Create a mystical description for a ${blendMode} blend of these artworks: ${artworkTitles.join(', ')} at ${intensity}% intensity.`
+          content: `Create a mystical description for a ${sanitizedBlendMode} blend of these artworks: ${sanitizedTitles.join(', ')} at ${intensity}% intensity.`
         }],
         max_tokens: 150,
         temperature: 0.9,

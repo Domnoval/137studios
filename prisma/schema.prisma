@@ -1,0 +1,253 @@
+// 137studios Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and profiles
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  password      String?
+  role          Role      @default(USER)
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  artworks      Artwork[]
+  remixes       Remix[]
+  orders        Order[]
+  favorites     Favorite[]
+  comments      Comment[]
+  reactions     Reaction[]
+  commentLikes  CommentLike[]
+}
+
+// Artwork model for the gallery
+model Artwork {
+  id            String    @id @default(cuid())
+  title         String
+  category      Category
+  size          String?
+  medium        String?
+  year          Int
+  price         String
+  description   String    @db.Text
+  color         String
+  featured      Boolean   @default(false)
+
+  // File storage
+  originalUrl   String?
+  thumbnailUrl  String?
+  metadata      Json?
+
+  // Limited edition settings
+  limitedEdition Boolean  @default(false)
+  editionSize    Int?
+  editionsSold   Int      @default(0)
+
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  artist        User?     @relation(fields: [artistId], references: [id])
+  artistId      String?
+  tags          Tag[]
+  remixes       Remix[]
+  orderItems    OrderItem[]
+  favorites     Favorite[]
+  comments      Comment[]
+  reactions     Reaction[]
+
+  @@index([category])
+  @@index([featured])
+}
+
+// Tag model for artwork categorization
+model Tag {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  artworks  Artwork[]
+}
+
+// Remix model for AI-generated variants
+model Remix {
+  id            String    @id @default(cuid())
+  prompt        String    @db.Text
+  blendMode     String
+  intensity     Float
+  resultUrl     String?
+  price         String
+  status        RemixStatus @default(PENDING)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  user          User?     @relation(fields: [userId], references: [id])
+  userId        String?
+  artwork       Artwork   @relation(fields: [artworkId], references: [id])
+  artworkId     String
+
+  @@index([status])
+  @@index([userId])
+}
+
+// Order model for purchases
+model Order {
+  id            String    @id @default(cuid())
+  orderNumber   String    @unique @default(cuid())
+  status        OrderStatus @default(PENDING)
+  total         Float
+  currency      String    @default("USD")
+
+  // Stripe payment info
+  stripePaymentId String?
+  stripeSessionId String?
+
+  // Customer info
+  customerEmail String
+  customerName  String?
+  shippingAddress Json?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  user          User?     @relation(fields: [userId], references: [id])
+  userId        String?
+  items         OrderItem[]
+
+  @@index([status])
+  @@index([orderNumber])
+}
+
+// OrderItem model for order line items
+model OrderItem {
+  id        String    @id @default(cuid())
+  quantity  Int
+  price     Float
+  type      OrderItemType
+
+  // Print options
+  printType String?
+  printSize String?
+
+  // Relations
+  order     Order     @relation(fields: [orderId], references: [id])
+  orderId   String
+  artwork   Artwork?  @relation(fields: [artworkId], references: [id])
+  artworkId String?
+
+  @@index([orderId])
+}
+
+// Favorite model for user favorites
+model Favorite {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  artwork   Artwork   @relation(fields: [artworkId], references: [id])
+  artworkId String
+
+  @@unique([userId, artworkId])
+  @@index([userId])
+}
+
+// Enums
+enum Role {
+  USER
+  ADMIN
+  ARTIST
+}
+
+enum Category {
+  PAINTING
+  DIGITAL
+  PRINT
+  INSTALLATION
+}
+
+enum RemixStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  PAID
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum OrderItemType {
+  ORIGINAL
+  PRINT
+  REMIX
+  DIGITAL
+}
+
+// Comment model for artwork comments
+model Comment {
+  id        String    @id @default(cuid())
+  content   String    @db.Text
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  artwork   Artwork   @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  artworkId String
+  likes     CommentLike[]
+
+  @@index([artworkId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Reaction model for artwork reactions
+model Reaction {
+  id        String    @id @default(cuid())
+  type      String    // love, mind_blown, cosmic, transcendent, mystical
+  createdAt DateTime  @default(now())
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  artwork   Artwork   @relation(fields: [artworkId], references: [id], onDelete: Cascade)
+  artworkId String
+
+  @@unique([userId, artworkId, type])
+  @@index([artworkId])
+  @@index([type])
+}
+
+// CommentLike model for comment likes
+model CommentLike {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+
+  // Relations
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  comment   Comment   @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId String
+
+  @@unique([userId, commentId])
+  @@index([commentId])
+}
