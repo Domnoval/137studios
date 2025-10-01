@@ -2,6 +2,8 @@
 
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
+import MagneticButton from './MagneticButton';
+import { navigateToSection } from '@/lib/useViewTransition';
 
 export default function HeroSection() {
   const ref = useRef<HTMLDivElement>(null);
@@ -15,7 +17,7 @@ export default function HeroSection() {
   const scale = useTransform(scrollYProgress, [0, 1], [1, 1.5]);
 
   return (
-    <section ref={ref} className="relative min-h-screen flex items-center justify-center">
+    <section ref={ref} className="relative min-h-screen flex items-center justify-center" aria-label="Hero - Welcome to 137 Studios">
       <motion.div
         style={{ y, opacity, scale }}
         className="relative z-10 text-center px-8"
@@ -50,33 +52,35 @@ export default function HeroSection() {
           transition={{ delay: 1, duration: 1 }}
           className="flex flex-col md:flex-row gap-6 justify-center items-center"
         >
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: "0 0 30px rgba(147, 51, 234, 0.5)" }}
-            whileTap={{ scale: 0.95 }}
+          <MagneticButton
+            onClick={() => navigateToSection('#gallery')}
             className="px-8 py-4 bg-gradient-to-r from-cosmic-astral to-cosmic-aura rounded-full text-white font-medium"
+            glowColor="rgba(147, 51, 234, 0.5)"
+            ariaLabel="Scroll to gallery section"
           >
             Enter the Gallery
-          </motion.button>
+          </MagneticButton>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+          <MagneticButton
+            onClick={() => {
+              const contact = document.querySelector('#contact');
+              if (contact) {
+                navigateToSection('#contact');
+              } else {
+                // Fallback to mailto if contact section doesn't exist
+                window.location.href = 'mailto:contact@137studios.com?subject=Commission Inquiry';
+              }
+            }}
             className="px-8 py-4 border border-cosmic-aura rounded-full text-cosmic-light hover:bg-cosmic-aura hover:bg-opacity-10"
+            glowColor="rgba(107, 70, 193, 0.5)"
+            ariaLabel="Navigate to commission inquiry"
           >
             Commission Work
-          </motion.button>
+          </MagneticButton>
         </motion.div>
 
-        <motion.div
-          animate={{
-            rotate: 360,
-          }}
-          transition={{
-            duration: 60,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none"
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none animate-spin-slow"
         >
           <svg viewBox="0 0 200 200" className="w-full h-full opacity-10">
             <path
@@ -90,7 +94,7 @@ export default function HeroSection() {
             <circle cx="100" cy="100" r="60" stroke="currentColor" strokeWidth="0.3" fill="none" className="text-cosmic-aura" />
             <circle cx="100" cy="100" r="30" stroke="currentColor" strokeWidth="0.3" fill="none" className="text-cosmic-light" />
           </svg>
-        </motion.div>
+        </div>
       </motion.div>
 
       {/* Scroll indicator */}

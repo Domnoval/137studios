@@ -8,6 +8,13 @@ export default {
   ],
   theme: {
     extend: {
+      spacing: {
+        'section': '6rem',      // 96px - section vertical spacing
+        'section-sm': '4rem',   // 64px - smaller section spacing
+        'content': '3rem',      // 48px - content block spacing
+        'element': '2rem',      // 32px - element spacing
+        'tight': '1rem',        // 16px - tight spacing
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -31,7 +38,7 @@ export default {
         'float': 'float 6s ease-in-out infinite',
         'morph': 'morph 8s ease-in-out infinite',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'spin-slow': 'spin 20s linear infinite',
+        'spin-slow': 'spin 60s linear infinite',
       },
       keyframes: {
         float: {

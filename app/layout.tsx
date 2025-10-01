@@ -3,6 +3,7 @@ import { Cinzel, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Providers } from '@/components/Providers';
 
 const cinzel = Cinzel({
   subsets: ['latin'],
@@ -61,9 +62,11 @@ export default function RootLayout({
       <body
         className={`${cinzel.variable} ${bebas.variable} antialiased`}
       >
-        {children}
-        <Analytics />
-        <SpeedInsights />
+        <Providers>
+          {children}
+          <Analytics />
+          <SpeedInsights />
+        </Providers>
       </body>
     </html>
   );

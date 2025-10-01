@@ -230,7 +230,7 @@ export default function EtherealGallery() {
   };
 
   return (
-    <section className="relative min-h-screen py-24">
+    <section id="gallery" className="relative min-h-screen py-24" aria-label="Ethereal Gallery - Interactive 3D artwork collection">
       <div className="absolute inset-0">
         <Canvas
           camera={{ position: [0, 0, 15], fov: 75 }}

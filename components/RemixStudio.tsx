@@ -149,9 +149,10 @@ export default function RemixStudio() {
     : '#9333ea';
 
   return (
-    <section className="relative z-10 min-h-screen py-24 px-8">
+    <section id="remix" className="relative z-10 min-h-screen py-24 px-8" aria-labelledby="remix-heading">
       <div className="max-w-7xl mx-auto">
         <motion.h2
+          id="remix-heading"
           initial={{ opacity: 0, y: -50 }}
           animate={{ opacity: 1, y: 0 }}
           className="text-5xl font-bold text-center mb-4"
