@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       imageUrl,
-      revisedPrompt: response.data[0]?.revised_prompt,
+      revisedPrompt: response.data?.[0]?.revised_prompt,
     });
 
   } catch (error: any) {

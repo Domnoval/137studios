@@ -28,8 +28,8 @@ function FloatingArtwork({ artwork, position, index, onClick, isSelected, isChan
   const meshRef = useRef<Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
-  // Load texture - all artworks have imageUrls now
-  const texture = useLoader(TextureLoader, artwork.imageUrl);
+  // Load texture - using non-null assertion since all artworks in gallery have images
+  const texture = useLoader(TextureLoader, artwork.imageUrl!);
 
   useFrame((state) => {
     if (meshRef.current) {
