@@ -118,34 +118,48 @@ export class FileValidator {
   private static async securityScan(buffer: Buffer): Promise<{ safe: boolean; threats?: string[] }> {
     const threats: string[] = [];
 
-    // Check for suspicious patterns
-    const suspiciousPatterns = [
-      /(<script.*?>.*?<\/script>)/gi, // JavaScript injection
-      /(eval\s*\()/gi, // Eval functions
-      /(document\.cookie)/gi, // Cookie access
-      /(window\.location)/gi, // Location manipulation
-      /(\x00)/g, // Null bytes
-    ];
+    console.log('SECURITY SCAN: Starting scan...');
 
-    const bufferString = buffer.toString('utf8');
+    // Check for executable headers ONLY at the start of the file
+    // (not anywhere in the file, as compressed image data can look like ZIP)
+    const fileHeader = buffer.slice(0, 4);
+    console.log('SECURITY SCAN: File header:', fileHeader.toString('hex'));
 
-    for (const pattern of suspiciousPatterns) {
-      if (pattern.test(bufferString)) {
-        threats.push(`Suspicious pattern detected: ${pattern.source}`);
-      }
-    }
-
-    // Check for embedded files (zip, executable headers)
     const dangerousHeaders = [
-      Buffer.from([0x50, 0x4B]), // ZIP file header
-      Buffer.from([0x4D, 0x5A]), // PE executable header
-      Buffer.from([0x7F, 0x45, 0x4C, 0x46]), // ELF executable
+      { bytes: Buffer.from([0x4D, 0x5A]), name: 'PE executable' }, // PE (.exe)
+      { bytes: Buffer.from([0x7F, 0x45, 0x4C, 0x46]), name: 'ELF executable' }, // ELF (Linux)
     ];
 
     for (const header of dangerousHeaders) {
-      if (buffer.indexOf(header) !== -1) {
-        threats.push('Embedded executable content detected');
+      if (fileHeader.slice(0, header.bytes.length).equals(header.bytes)) {
+        console.log(`SECURITY SCAN: THREAT - ${header.name} header detected`);
+        threats.push(`${header.name} header detected`);
       }
+    }
+
+    // Only scan text metadata regions for suspicious patterns (not the entire binary)
+    // Extract only ASCII/UTF-8 text chunks from the file (EXIF, metadata)
+    const textChunks = buffer.toString('binary').match(/[\x20-\x7E]{10,}/g) || [];
+    const metadataText = textChunks.join(' ');
+    console.log(`SECURITY SCAN: Found ${textChunks.length} text chunks in metadata`);
+
+    // Check for dangerous script patterns in metadata only
+    const suspiciousPatterns = [
+      /(<script.*?>.*?<\/script>)/gi, // JavaScript injection
+      /(javascript\s*:)/gi, // JavaScript protocol
+      /(on\w+\s*=)/gi, // Event handlers (onclick=, onerror=, etc)
+    ];
+
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(metadataText)) {
+        console.log(`SECURITY SCAN: THREAT - Pattern detected: ${pattern.source}`);
+        threats.push(`Suspicious pattern in metadata: ${pattern.source}`);
+      }
+    }
+
+    console.log(`SECURITY SCAN: Scan complete. Threats found: ${threats.length}`);
+    if (threats.length > 0) {
+      console.log('SECURITY SCAN: Threats:', threats);
     }
 
     return {
@@ -184,21 +198,68 @@ export class ImageProcessor {
     maxHeight?: number;
     quality?: number;
     format?: 'jpeg' | 'png' | 'webp';
+    autoStraighten?: boolean;
+    autoCrop?: boolean;
   } = {}): Promise<{
     optimized: Buffer;
     thumbnail: Buffer;
     metadata: any;
+    transformations: {
+      straightened: boolean;
+      cropped: boolean;
+      rotationAngle: number;
+    };
   }> {
     const {
       maxWidth = 2048,
       maxHeight = 2048,
       quality = 85,
       format = 'webp',
+      autoStraighten = true,
+      autoCrop = true,
     } = options;
 
     try {
-      // Create optimized version
-      const optimized = await sharp(buffer)
+      let sharpInstance = sharp(buffer);
+      let rotationAngle = 0;
+      let wasCropped = false;
+
+      // 1. Auto-straighten using EXIF orientation
+      if (autoStraighten) {
+        const metadata = await sharp(buffer).metadata();
+
+        // Rotate based on EXIF orientation (handles phone photos)
+        sharpInstance = sharpInstance.rotate();
+
+        // Track if rotation was applied
+        if (metadata.orientation && metadata.orientation !== 1) {
+          rotationAngle = metadata.orientation;
+        }
+      }
+
+      // 2. Auto-crop whitespace/borders
+      if (autoCrop) {
+        try {
+          // Trim whitespace with tolerance
+          sharpInstance = sharpInstance.trim({
+            threshold: 10, // Remove pixels within 10 units of edge color
+            background: { r: 255, g: 255, b: 255, alpha: 1 }, // White background
+          });
+          wasCropped = true;
+        } catch (trimError) {
+          // If trim fails, continue without cropping
+          console.warn('Auto-crop failed, continuing without trim');
+        }
+      }
+
+      // 3. Strip sensitive EXIF data (GPS, camera info, etc.)
+      // withMetadata() with empty exif removes sensitive data but keeps color profile
+      sharpInstance = sharpInstance.withMetadata({
+        exif: {}, // Remove all EXIF (including GPS, camera info)
+      });
+
+      // 4. Resize and optimize
+      const optimized = await sharpInstance
         .resize(maxWidth, maxHeight, {
           fit: 'inside',
           withoutEnlargement: true,
@@ -206,8 +267,9 @@ export class ImageProcessor {
         .toFormat(format, { quality })
         .toBuffer();
 
-      // Create thumbnail
+      // 5. Create thumbnail
       const thumbnail = await sharp(buffer)
+        .rotate() // Also straighten thumbnail
         .resize(400, 400, {
           fit: 'cover',
           position: 'center',
@@ -215,13 +277,18 @@ export class ImageProcessor {
         .toFormat('webp', { quality: 75 })
         .toBuffer();
 
-      // Get final metadata
+      // 6. Get final metadata
       const metadata = await sharp(optimized).metadata();
 
       return {
         optimized,
         thumbnail,
         metadata,
+        transformations: {
+          straightened: rotationAngle !== 0,
+          cropped: wasCropped,
+          rotationAngle,
+        },
       };
     } catch (error) {
       throw new Error('Image processing failed');

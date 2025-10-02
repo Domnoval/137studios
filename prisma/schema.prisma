@@ -47,6 +47,40 @@ model Artwork {
   thumbnailUrl  String?
   metadata      Json?
 
+  // Enhanced file metadata
+  fileSize         Int?       // Original file size in bytes
+  optimizedSize    Int?       // Optimized file size in bytes
+  width            Int?       // Image width in pixels
+  height           Int?       // Image height in pixels
+  format           String?    // "webp", "jpeg", "png"
+  fileHash         String?    // SHA-256 hash for duplicate detection
+
+  // AI-generated suggestions (not yet applied)
+  aiSuggestedTitle    String?    // OpenAI suggested title
+  aiSuggestedDesc     String?    // AI-generated description
+  aiSuggestedTags     String[]   // AI-extracted tags
+  aiDetectedStyle     String?    // "Abstract", "Impressionist", etc.
+  aiDetectedMood      String?    // "Calm", "Energetic", etc.
+  aiSuggestedPrice    String?    // AI-recommended price
+  aiConfidence        Float?     // 0.0-1.0 confidence score
+  aiProcessedAt       DateTime?  // When AI analysis completed
+
+  // Color palette (AI + manual)
+  colorPalette     String[]   @default([])  // Array of hex colors
+
+  // Processing status
+  uploadStatus     UploadStatus @default(PENDING)
+  processingError  String?    // Error message if processing failed
+
+  // Upload tracking
+  uploadedAt       DateTime?  // When file was uploaded
+  uploadedBy       String?    // userId of uploader
+  originalFilename String?    // Original file name
+
+  // Image transformations applied
+  autoStraightened Boolean @default(false)
+  autoCropped      Boolean @default(false)
+
   // Limited edition settings
   limitedEdition Boolean  @default(false)
   editionSize    Int?
@@ -68,6 +102,9 @@ model Artwork {
 
   @@index([category])
   @@index([featured])
+  @@index([uploadStatus])
+  @@index([fileHash])
+  @@index([uploadedAt])
 }
 
 // Tag model for artwork categorization
@@ -199,6 +236,15 @@ enum OrderItemType {
   PRINT
   REMIX
   DIGITAL
+}
+
+enum UploadStatus {
+  PENDING      // Upload initiated
+  PROCESSING   // Image processing in progress
+  ANALYZING    // AI analysis in progress
+  COMPLETED    // All processing done
+  FAILED       // Processing failed
+  PARTIAL      // Upload succeeded, AI failed (still usable)
 }
 
 // Comment model for artwork comments

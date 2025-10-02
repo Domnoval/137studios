@@ -17,6 +17,37 @@
   cursor: none !important;
 }
 
+/* Enhanced cursor visibility for better UX */
+* {
+  cursor: inherit;
+}
+
+/* Bright cursor on hover states */
+button,
+a,
+[role="button"] {
+  cursor: pointer;
+}
+
+button:hover,
+a:hover,
+[role="button"]:hover {
+  cursor: pointer;
+}
+
+/* Custom cursor for file uploads */
+input[type="file"] {
+  cursor: pointer;
+}
+
+/* Ensure text inputs show text cursor */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea {
+  cursor: text;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -103,4 +134,18 @@ body {
       opacity: 0;
     }
   }
+}
+
+/* Slow spin animation for cosmic effects */
+@keyframes spin-slow {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 60s linear infinite;
 }

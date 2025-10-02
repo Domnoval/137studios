@@ -62,20 +62,34 @@ function getClientIP(request: NextRequest): string {
 
 // Security headers
 function addSecurityHeaders(response: NextResponse): NextResponse {
-  // Content Security Policy
-  response.headers.set(
-    'Content-Security-Policy',
-    "default-src 'self'; " +
-    "script-src 'self' https://vercel.live https://va.vercel-scripts.com; " +
-    "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: blob: https://*.vercel-storage.com; " +
-    "font-src 'self' data:; " +
-    "connect-src 'self' https://api.openai.com https://*.vercel-storage.com https://vitals.vercel-insights.com; " +
-    "media-src 'self' blob:; " +
-    "object-src 'none'; " +
-    "base-uri 'self'; " +
-    "form-action 'self';"
-  );
+  // Content Security Policy - less strict in development
+  const isDev = process.env.NODE_ENV === 'development';
+
+  const cspDirectives = isDev
+    ? // Development: Allow unsafe-inline for Next.js
+      "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: blob: https://*.vercel-storage.com; " +
+      "font-src 'self' data:; " +
+      "connect-src 'self' https://api.openai.com https://*.vercel-storage.com https://vitals.vercel-insights.com ws://localhost:* ws://10.255.255.254:*; " +
+      "media-src 'self' blob:; " +
+      "object-src 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self';"
+    : // Production: Strict CSP
+      "default-src 'self'; " +
+      "script-src 'self' https://vercel.live https://va.vercel-scripts.com; " +
+      "style-src 'self' 'unsafe-inline'; " +
+      "img-src 'self' data: blob: https://*.vercel-storage.com; " +
+      "font-src 'self' data:; " +
+      "connect-src 'self' https://api.openai.com https://*.vercel-storage.com https://vitals.vercel-insights.com; " +
+      "media-src 'self' blob:; " +
+      "object-src 'none'; " +
+      "base-uri 'self'; " +
+      "form-action 'self';";
+
+  response.headers.set('Content-Security-Policy', cspDirectives);
 
   // Other security headers
   response.headers.set('X-Content-Type-Options', 'nosniff');
@@ -90,6 +104,14 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const clientIP = getClientIP(request);
+
+  if (pathname.startsWith('/api/upload')) {
+    console.log('=== MIDDLEWARE: Upload request ===', {
+      pathname,
+      clientIP,
+      method: request.method,
+    });
+  }
 
   // Apply rate limiting based on route
   let rateLimit;
@@ -112,9 +134,18 @@ export async function middleware(request: NextRequest) {
   // Apply rate limiting
   if (rateLimit) {
     try {
+      if (pathname.startsWith('/api/upload')) {
+        console.log('MIDDLEWARE: Checking rate limit for upload...');
+      }
+
       const result = await rateLimit.limit(rateLimitKey);
 
+      if (pathname.startsWith('/api/upload')) {
+        console.log('MIDDLEWARE: Rate limit result:', result);
+      }
+
       if (!result.success) {
+        console.log('MIDDLEWARE: Rate limit exceeded - returning 429');
         return new NextResponse(
           JSON.stringify({
             error: 'Rate limit exceeded',
@@ -141,6 +172,10 @@ export async function middleware(request: NextRequest) {
       response.headers.set('X-RateLimit-Limit', result.limit.toString());
       response.headers.set('X-RateLimit-Remaining', result.remaining.toString());
       response.headers.set('X-RateLimit-Reset', result.reset.toString());
+
+      if (pathname.startsWith('/api/upload')) {
+        console.log('MIDDLEWARE: Rate limit passed, forwarding to upload route');
+      }
 
       return addSecurityHeaders(response);
     } catch (error) {

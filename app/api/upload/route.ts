@@ -3,23 +3,40 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { FileValidator, ImageProcessor, UploadRateLimit } from '@/lib/upload-security';
 import { put } from '@vercel/blob';
+import { analyzeArtworkWithRetry } from '@/lib/ai-vision';
 
 export async function POST(request: NextRequest) {
+  console.log('=== UPLOAD API CALLED ===');
+
   try {
+    console.log('1. Starting authentication check...');
+
     // 1. Authentication check
     const session = await getServerSession(authOptions);
+    console.log('Session details:', {
+      hasSession: !!session,
+      userEmail: session?.user?.email,
+      userRole: session?.user?.role,
+    });
+
     if (!session || session.user?.role !== 'admin') {
+      console.error('Authentication failed - returning 401');
       return NextResponse.json(
         { error: 'Unauthorized. Admin access required.' },
         { status: 401 }
       );
     }
 
+    console.log('2. Checking rate limit...');
+
     // 2. Rate limiting
     const clientIP = request.headers.get('x-forwarded-for')?.split(',')[0] ||
                     request.headers.get('x-real-ip') ||
                     'unknown';
+    console.log('Client IP:', clientIP);
+
     if (!UploadRateLimit.checkRateLimit(clientIP, 5, 60000)) {
+      console.error('Rate limit exceeded - returning 429');
       return NextResponse.json(
         {
           error: 'Rate limit exceeded. Please wait before uploading again.',
@@ -29,12 +46,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('3. Parsing form data...');
+
     // 3. Parse multipart form data
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const metadata = formData.get('metadata') as string;
 
+    console.log('Upload request received:', {
+      hasFile: !!file,
+      fileName: file?.name,
+      fileSize: file?.size,
+      fileType: file?.type,
+    });
+
     if (!file) {
+      console.error('No file provided in form data');
       return NextResponse.json(
         { error: 'No file provided' },
         { status: 400 }
@@ -47,31 +74,49 @@ export async function POST(request: NextRequest) {
     // 5. Comprehensive file validation
     const validation = await FileValidator.validateFile(buffer, file.name);
     if (!validation.isValid) {
+      console.error('File validation failed:', validation.error);
       return NextResponse.json(
         { error: validation.error },
         { status: 400 }
       );
     }
 
-    // 6. Process and optimize image
+    console.log('File validated successfully:', validation.metadata);
+
+    // 6. Process and optimize image with auto-straighten and auto-crop
     const processed = await ImageProcessor.processAndOptimize(buffer, {
       maxWidth: 2048,
       maxHeight: 2048,
       quality: 85,
       format: 'webp',
+      autoStraighten: true,
+      autoCrop: true,
     });
 
     // 7. Extract colors for artwork metadata
     const colors = await ImageProcessor.extractColors(buffer);
 
-    // 8. Generate secure filenames
+    // 8. AI Vision analysis (parallel with upload)
+    let aiAnalysis = null;
+    try {
+      aiAnalysis = await analyzeArtworkWithRetry(processed.optimized, {
+        width: processed.metadata.width,
+        height: processed.metadata.height,
+        fileSize: processed.optimized.length,
+      });
+    } catch (aiError) {
+      console.error('AI analysis failed, continuing without it:', aiError);
+      // Upload continues even if AI fails
+    }
+
+    // 9. Generate secure filenames
     const secureFilename = FileValidator.generateSecureFilename(
       file.name,
       validation.metadata!.hash
     );
     const thumbnailFilename = secureFilename.replace('.', '_thumb.');
 
-    // 9. Upload to Vercel Blob (if configured)
+    // 10. Upload to Vercel Blob (if configured)
     let optimizedUrl = '';
     let thumbnailUrl = '';
 
@@ -111,7 +156,7 @@ export async function POST(request: NextRequest) {
       thumbnailUrl = `/uploads/${thumbnailFilename}`;
     }
 
-    // 10. Prepare response with comprehensive metadata
+    // 11. Prepare response with comprehensive metadata including AI analysis
     const response = {
       success: true,
       file: {
@@ -132,15 +177,38 @@ export async function POST(request: NextRequest) {
           thumbnail: thumbnailUrl,
         },
         colors,
+        colorPalette: aiAnalysis?.colorPalette || colors,
         hash: validation.metadata!.hash,
         uploadedAt: new Date().toISOString(),
         uploadedBy: session.user.id,
+        transformations: {
+          autoStraightened: processed.transformations.straightened,
+          autoCropped: processed.transformations.cropped,
+        },
       },
+      // AI-generated suggestions (user can review and accept/edit)
+      aiSuggestions: aiAnalysis ? {
+        title: aiAnalysis.title,
+        description: aiAnalysis.description,
+        tags: aiAnalysis.suggestedTags,
+        style: aiAnalysis.detectedStyle,
+        mood: aiAnalysis.mood,
+        price: `$${aiAnalysis.priceRecommendation.suggested}`,
+        priceRange: {
+          min: aiAnalysis.priceRecommendation.min,
+          max: aiAnalysis.priceRecommendation.max,
+        },
+        confidence: aiAnalysis.confidence,
+        processedAt: new Date().toISOString(),
+      } : null,
       metadata: metadata ? JSON.parse(metadata) : null,
     };
 
-    // 11. Log successful upload (for audit trail)
+    // 12. Log successful upload (for audit trail)
     console.log(`Artwork uploaded successfully: ${secureFilename} by ${session.user.name}`);
+    if (aiAnalysis) {
+      console.log(`AI analysis complete: ${aiAnalysis.confidence * 100}% confidence`);
+    }
 
     return NextResponse.json(response, { status: 201 });
 

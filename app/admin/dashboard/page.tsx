@@ -4,7 +4,7 @@ import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import EnhancedArtistAdmin from '@/components/EnhancedArtistAdmin';
+import SmartArtworkUploader from '@/components/SmartArtworkUploader';
 
 export default function AdminDashboard() {
   const sessionResult = useSession();
@@ -52,7 +52,7 @@ export default function AdminDashboard() {
               onClick={() => setShowUpload(true)}
               className="px-6 py-3 bg-gradient-to-r from-cosmic-plasma to-cosmic-aura rounded-full text-white font-bold"
             >
-              Upload Artwork ✨
+              🎨 Smart Upload
             </motion.button>
 
             <motion.button
@@ -157,11 +157,17 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Upload Modal */}
+      {/* Smart Artwork Uploader */}
       {showUpload && (
-        <div className="fixed inset-0 z-50">
-          <EnhancedArtistAdmin onClose={() => setShowUpload(false)} />
-        </div>
+        <SmartArtworkUploader
+          maxFiles={5}
+          onComplete={(artworks) => {
+            console.log('Artworks saved:', artworks);
+            setShowUpload(false);
+            // Optionally refresh the page to show new artworks
+            window.location.reload();
+          }}
+        />
       )}
     </div>
   );
