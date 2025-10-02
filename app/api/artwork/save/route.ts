@@ -16,7 +16,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Parse request body
+    // 2. Get or create Artist record for the admin user
+    let artist = await prisma.artist.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    if (!artist) {
+      // Create Artist record for admin
+      artist = await prisma.artist.create({
+        data: {
+          userId: session.user.id,
+          name: session.user.name || 'Domnoval',
+          bio: 'Artist at 137 Studios - Exploring consciousness through digital art',
+          email: session.user.email || '',
+          website: 'https://137studios.com',
+        },
+      });
+      console.log(`Created Artist record for ${artist.name}`);
+    }
+
+    // 3. Parse request body
     const body = await request.json();
     const { artworks } = body;
 
@@ -27,7 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Save each artwork to database
+    // 4. Save each artwork to database
     const savedArtworks = [];
     const errors = [];
 
@@ -92,7 +111,7 @@ export async function POST(request: NextRequest) {
             autoCropped: file.transformations?.autoCropped || false,
 
             // Relations
-            artistId: session.user.id,
+            artistId: artist.id,
           },
         });
 

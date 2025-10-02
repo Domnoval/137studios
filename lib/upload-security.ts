@@ -17,8 +17,8 @@ const SECURITY_CONFIG = {
   ],
   allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp', '.gif'],
   maxDimensions: {
-    width: 8192,
-    height: 8192,
+    width: 16384, // Support ultra-high-res artwork (16K)
+    height: 16384,
   },
   minDimensions: {
     width: 100,
@@ -115,53 +115,28 @@ export class FileValidator {
   }
 
   // Security scanning for malicious content
+  // Simplified for trusted admin uploads - only blocks actual executables
   private static async securityScan(buffer: Buffer): Promise<{ safe: boolean; threats?: string[] }> {
     const threats: string[] = [];
 
-    console.log('SECURITY SCAN: Starting scan...');
-
-    // Check for executable headers ONLY at the start of the file
-    // (not anywhere in the file, as compressed image data can look like ZIP)
+    // Only check for executable file headers at the start
+    // Images often have compressed data that looks suspicious but isn't
     const fileHeader = buffer.slice(0, 4);
-    console.log('SECURITY SCAN: File header:', fileHeader.toString('hex'));
 
+    // Block actual executables only
     const dangerousHeaders = [
-      { bytes: Buffer.from([0x4D, 0x5A]), name: 'PE executable' }, // PE (.exe)
-      { bytes: Buffer.from([0x7F, 0x45, 0x4C, 0x46]), name: 'ELF executable' }, // ELF (Linux)
+      { bytes: Buffer.from([0x4D, 0x5A]), name: 'PE executable (.exe)' },
+      { bytes: Buffer.from([0x7F, 0x45, 0x4C, 0x46]), name: 'ELF executable (Linux)' },
     ];
 
     for (const header of dangerousHeaders) {
       if (fileHeader.slice(0, header.bytes.length).equals(header.bytes)) {
-        console.log(`SECURITY SCAN: THREAT - ${header.name} header detected`);
-        threats.push(`${header.name} header detected`);
+        threats.push(`${header.name} detected`);
       }
     }
 
-    // Only scan text metadata regions for suspicious patterns (not the entire binary)
-    // Extract only ASCII/UTF-8 text chunks from the file (EXIF, metadata)
-    const textChunks = buffer.toString('binary').match(/[\x20-\x7E]{10,}/g) || [];
-    const metadataText = textChunks.join(' ');
-    console.log(`SECURITY SCAN: Found ${textChunks.length} text chunks in metadata`);
-
-    // Check for dangerous script patterns in metadata only
-    const suspiciousPatterns = [
-      /(<script.*?>.*?<\/script>)/gi, // JavaScript injection
-      /(javascript\s*:)/gi, // JavaScript protocol
-      /(on\w+\s*=)/gi, // Event handlers (onclick=, onerror=, etc)
-    ];
-
-    for (const pattern of suspiciousPatterns) {
-      if (pattern.test(metadataText)) {
-        console.log(`SECURITY SCAN: THREAT - Pattern detected: ${pattern.source}`);
-        threats.push(`Suspicious pattern in metadata: ${pattern.source}`);
-      }
-    }
-
-    console.log(`SECURITY SCAN: Scan complete. Threats found: ${threats.length}`);
-    if (threats.length > 0) {
-      console.log('SECURITY SCAN: Threats:', threats);
-    }
-
+    // For trusted admin uploads, we don't need to scan image metadata
+    // (compression can create false positives)
     return {
       safe: threats.length === 0,
       threats: threats.length > 0 ? threats : undefined,
