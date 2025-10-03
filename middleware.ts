@@ -49,7 +49,7 @@ const createRateLimit = (requests: number, window: "1 m" | "1 h") => {
 // Different rate limits for different routes
 const apiRateLimit = createRateLimit(50, '1 m'); // 50 requests per minute for general API
 const uploadRateLimit = createRateLimit(5, '1 m'); // 5 uploads per minute
-const authRateLimit = createRateLimit(10, '1 m'); // 10 auth attempts per minute
+const authRateLimit = createRateLimit(100, '1 m'); // 100 auth attempts per minute (generous for dev)
 const remixRateLimit = createRateLimit(20, '1 m'); // 20 remix requests per minute
 
 // Get client identifier (IP address with fallbacks)

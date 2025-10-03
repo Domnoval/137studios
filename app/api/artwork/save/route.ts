@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,26 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Get or create Artist record for the admin user
-    let artist = await prisma.artist.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (!artist) {
-      // Create Artist record for admin
-      artist = await prisma.artist.create({
-        data: {
-          userId: session.user.id,
-          name: session.user.name || 'Domnoval',
-          bio: 'Artist at 137 Studios - Exploring consciousness through digital art',
-          email: session.user.email || '',
-          website: 'https://137studios.com',
-        },
-      });
-      console.log(`Created Artist record for ${artist.name}`);
-    }
-
-    // 3. Parse request body
+    // 2. Parse request body
     const body = await request.json();
     const { artworks } = body;
 
@@ -111,7 +90,7 @@ export async function POST(request: NextRequest) {
             autoCropped: file.transformations?.autoCropped || false,
 
             // Relations
-            artistId: artist.id,
+            artistId: session.user.id,
           },
         });
 
