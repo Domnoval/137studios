@@ -66,7 +66,7 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
   const isDev = process.env.NODE_ENV === 'development';
 
   const cspDirectives = isDev
-    ? // Development: Allow unsafe-inline for Next.js
+    ? // Development: Allow unsafe-inline and unsafe-eval for Next.js
       "default-src 'self'; " +
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://vercel.live https://va.vercel-scripts.com; " +
       "style-src 'self' 'unsafe-inline'; " +
@@ -77,9 +77,9 @@ function addSecurityHeaders(response: NextResponse): NextResponse {
       "object-src 'none'; " +
       "base-uri 'self'; " +
       "form-action 'self';"
-    : // Production: Strict CSP
+    : // Production: Allow unsafe-inline for Next.js inline scripts
       "default-src 'self'; " +
-      "script-src 'self' https://vercel.live https://va.vercel-scripts.com; " +
+      "script-src 'self' 'unsafe-inline' https://vercel.live https://va.vercel-scripts.com; " +
       "style-src 'self' 'unsafe-inline'; " +
       "img-src 'self' data: blob: https://*.vercel-storage.com; " +
       "font-src 'self' data:; " +
