@@ -68,66 +68,74 @@ export default function ArtworkPage({ params }: PageProps) {
     loadArtwork();
   }, [params]);
 
-  // Update URL when view state changes
-  const updateURL = useCallback((newState: Partial<ViewState>) => {
+  // Update URL when view state changes (deferred to avoid render-phase updates)
+  useEffect(() => {
     const url = new URL(window.location.href);
+    let hasChanges = false;
 
-    if (newState.transform) {
-      if (newState.transform.scale !== 1) {
-        url.searchParams.set('zoom', newState.transform.scale.toFixed(2));
-      } else {
+    if (viewState.transform.scale !== 1) {
+      url.searchParams.set('zoom', viewState.transform.scale.toFixed(2));
+      hasChanges = true;
+    } else {
+      if (url.searchParams.has('zoom')) {
         url.searchParams.delete('zoom');
+        hasChanges = true;
       }
+    }
 
-      if (newState.transform.tx !== 0) {
-        url.searchParams.set('x', newState.transform.tx.toFixed(0));
-      } else {
+    if (viewState.transform.tx !== 0) {
+      url.searchParams.set('x', viewState.transform.tx.toFixed(0));
+      hasChanges = true;
+    } else {
+      if (url.searchParams.has('x')) {
         url.searchParams.delete('x');
+        hasChanges = true;
       }
+    }
 
-      if (newState.transform.ty !== 0) {
-        url.searchParams.set('y', newState.transform.ty.toFixed(0));
-      } else {
+    if (viewState.transform.ty !== 0) {
+      url.searchParams.set('y', viewState.transform.ty.toFixed(0));
+      hasChanges = true;
+    } else {
+      if (url.searchParams.has('y')) {
         url.searchParams.delete('y');
+        hasChanges = true;
       }
     }
 
-    if (newState.overlay !== undefined) {
-      if (newState.overlay !== 'none') {
-        url.searchParams.set('overlay', newState.overlay);
-      } else {
+    if (viewState.overlay !== 'none') {
+      url.searchParams.set('overlay', viewState.overlay);
+      hasChanges = true;
+    } else {
+      if (url.searchParams.has('overlay')) {
         url.searchParams.delete('overlay');
+        hasChanges = true;
       }
     }
 
-    if (newState.relatedIndex !== undefined) {
-      if (newState.relatedIndex > 0) {
-        url.searchParams.set('related', newState.relatedIndex.toString());
-      } else {
+    if (viewState.relatedIndex && viewState.relatedIndex > 0) {
+      url.searchParams.set('related', viewState.relatedIndex.toString());
+      hasChanges = true;
+    } else {
+      if (url.searchParams.has('related')) {
         url.searchParams.delete('related');
+        hasChanges = true;
       }
     }
 
-    // Use replaceState to avoid creating history entries for every zoom/pan
-    window.history.replaceState({}, '', url.toString());
-  }, []);
+    if (hasChanges) {
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [viewState]);
 
   // Handlers
   const handleTransformChange = useCallback((transform: TransformState) => {
-    setViewState((prev) => {
-      const newState = { ...prev, transform };
-      updateURL({ transform });
-      return newState;
-    });
-  }, [updateURL]);
+    setViewState((prev) => ({ ...prev, transform }));
+  }, []);
 
   const handleOverlayChange = useCallback((overlay: OverlayType) => {
-    setViewState((prev) => {
-      const newState = { ...prev, overlay };
-      updateURL({ overlay });
-      return newState;
-    });
-  }, [updateURL]);
+    setViewState((prev) => ({ ...prev, overlay }));
+  }, []);
 
   const handleRelatedSelect = useCallback(async (slug: string) => {
     // Navigate to the new artwork
