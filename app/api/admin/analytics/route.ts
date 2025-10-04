@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Calculate overview metrics
-    const totalRevenue = orders.reduce((sum: number, order: any) => sum + order.totalAmount, 0);
+    const totalRevenue = orders.reduce((sum: number, order: any) => sum + order.total, 0);
     const totalOrders = orders.length;
     const averageOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
 
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
       if (!dailyRevenue[dateKey]) {
         dailyRevenue[dateKey] = { amount: 0, orders: 0 };
       }
-      dailyRevenue[dateKey].amount += order.totalAmount;
+      dailyRevenue[dateKey].amount += order.total;
       dailyRevenue[dateKey].orders += 1;
     });
 
@@ -127,7 +127,7 @@ export async function GET(request: NextRequest) {
       if (!monthlyRevenue[monthKey]) {
         monthlyRevenue[monthKey] = { amount: 0, orders: 0 };
       }
-      monthlyRevenue[monthKey].amount += order.totalAmount;
+      monthlyRevenue[monthKey].amount += order.total;
       monthlyRevenue[monthKey].orders += 1;
     });
 
@@ -145,8 +145,10 @@ export async function GET(request: NextRequest) {
     orders.forEach((order: any) => {
       order.items.forEach((item: any) => {
         try {
-          const productDetails = JSON.parse(item.productDetails || '{}');
-          const key = `${productDetails.title || 'Unknown'}_${productDetails.productType || item.type}`;
+          // Use actual schema fields: type, printType, printSize
+          const productName = item.artwork?.title || 'Unknown';
+          const productType = item.printType || item.type || 'Unknown';
+          const key = `${productName}_${productType}`;
 
           if (!productAnalysis[key]) {
             productAnalysis[key] = { quantity: 0, revenue: 0 };
@@ -155,7 +157,7 @@ export async function GET(request: NextRequest) {
           productAnalysis[key].quantity += item.quantity;
           productAnalysis[key].revenue += item.price * item.quantity;
         } catch (error) {
-          console.error('Error parsing product details:', error);
+          console.error('Error analyzing product:', error);
         }
       });
     });
@@ -179,8 +181,8 @@ export async function GET(request: NextRequest) {
       const categoryOrders = orders.filter((order: any) =>
         order.items.some((item: any) => {
           try {
-            const details = JSON.parse(item.productDetails || '{}');
-            return details.category === category;
+            // Use artwork category from schema
+            return item.artwork?.category?.toLowerCase() === category.toLowerCase();
           } catch {
             return false;
           }
@@ -190,8 +192,10 @@ export async function GET(request: NextRequest) {
       const revenue = categoryOrders.reduce((sum: number, order: any) =>
         sum + order.items.reduce((itemSum: number, item: any) => {
           try {
-            const details = JSON.parse(item.productDetails || '{}');
-            return details.category === category ? itemSum + (item.price * item.quantity) : itemSum;
+            // Use artwork category from schema
+            return item.artwork?.category?.toLowerCase() === category.toLowerCase()
+              ? itemSum + (item.price * item.quantity)
+              : itemSum;
           } catch {
             return itemSum;
           }
@@ -238,7 +242,7 @@ export async function GET(request: NextRequest) {
         recentOrders: recentOrders.map((order: any) => ({
           orderNumber: order.orderNumber,
           customerName: order.user.name,
-          total: Math.round(order.totalAmount * 100) / 100,
+          total: Math.round(order.total * 100) / 100,
           status: order.status,
           createdAt: order.createdAt.toISOString()
         }))
