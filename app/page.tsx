@@ -7,7 +7,7 @@ import SacredGeometry from '@/components/SacredGeometry';
 import HeroSection from '@/components/HeroSection';
 import NewGallery from '@/components/NewGallery';
 import Navigation from '@/components/Navigation';
-import CursorTrail from '@/components/CursorTrail';
+// Removed CursorTrail for better UX
 import CosmicHub from '@/components/CosmicHub';
 import SynthesisChamber from '@/components/SynthesisChamber';
 import AIOracle from '@/components/AIOracle';
@@ -67,22 +67,19 @@ export default function Home() {
 
   return (
     <div ref={containerRef} className="min-h-screen bg-cosmic-void text-cosmic-glow overflow-x-hidden">
-      <CursorTrail />
       <AIOracle />
       <TrancePrompt />
 
-      {/* Cosmic Grid Background Image */}
+      {/* Cosmic Grid Background Image - VISIBLE */}
       <div className="fixed inset-0 -z-10">
         <Image
           src="/cosmic-grid-bg.jpg"
           alt="Cosmic perspective grid background"
           fill
-          className="object-cover"
+          className="object-cover opacity-40"
           quality={85}
           priority
         />
-        {/* Subtle overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-b from-cosmic-void/30 via-transparent to-cosmic-void/50" />
       </div>
 
       {/* Sacred Geometry Background */}

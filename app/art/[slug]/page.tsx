@@ -213,10 +213,10 @@ export default function ArtworkPage({ params }: PageProps) {
         </button>
 
         <div className="flex items-center gap-4">
-          <OverlayToggles
+          {/* <OverlayToggles
             current={viewState.overlay}
             onChange={handleOverlayChange}
-          />
+          /> */}
           <ShareButton
             viewState={{
               scale: viewState.transform.scale,
@@ -284,13 +284,13 @@ export default function ArtworkPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Mobile overlay toggles */}
-      <div className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-30">
+      {/* Mobile overlay toggles - HIDDEN FOR SIMPLER UX */}
+      {/* <div className="lg:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-30">
         <OverlayToggles
           current={viewState.overlay}
           onChange={handleOverlayChange}
         />
-      </div>
+      </div> */}
 
       {/* Hotkey guide */}
       <HotkeyGuide />

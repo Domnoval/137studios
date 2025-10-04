@@ -34,13 +34,13 @@ export default function ArtworkStage({
   const y = useSpring(useMotionValue(0), { stiffness: 300, damping: 30 });
   const scaleMotion = useSpring(useMotionValue(1), { stiffness: 300, damping: 30 });
 
-  // Calculate fit scale
+  // Calculate fit scale - MORE CONSERVATIVE
   const getFitScale = useCallback(() => {
-    if (!containerRef.current) return 1;
+    if (!containerRef.current) return 0.5;
     const container = containerRef.current.getBoundingClientRect();
-    const scaleX = (container.width * 0.9) / image.width;
-    const scaleY = (container.height * 0.9) / image.height;
-    return Math.min(scaleX, scaleY, 1);
+    const scaleX = (container.width * 0.7) / image.width;
+    const scaleY = (container.height * 0.7) / image.height;
+    return Math.min(scaleX, scaleY, 0.8);
   }, [image.width, image.height]);
 
   // Calculate fill scale
