@@ -5,6 +5,7 @@ import { createContext, useContext, useState, ReactNode } from 'react';
 export interface Artwork {
   id: number;
   title: string;
+  slug?: string; // URL-friendly identifier
   category: 'painting' | 'digital' | 'print' | 'installation';
   size: string;
   medium: string;

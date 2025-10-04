@@ -17,6 +17,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 1,
     title: "Purple Dreamscape",
+    slug: "purple-dreamscape",
     category: "digital",
     size: "24 x 36 inches",
     medium: "Digital Photography",
@@ -29,6 +30,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 2,
     title: "Cyan Consciousness",
+    slug: "cyan-consciousness",
     category: "digital",
     size: "18 x 24 inches",
     medium: "Digital Art",
@@ -41,6 +43,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 3,
     title: "Void Symphony",
+    slug: "void-symphony",
     category: "digital",
     size: "30 x 40 inches",
     medium: "Digital Composite",
@@ -53,6 +56,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 4,
     title: "Golden Frequency",
+    slug: "golden-frequency",
     category: "digital",
     size: "20 x 30 inches",
     medium: "Digital Photography",
@@ -65,6 +69,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 5,
     title: "Amethyst Portal",
+    slug: "amethyst-portal",
     category: "digital",
     size: "16 x 20 inches",
     medium: "Digital Art",
@@ -77,6 +82,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 6,
     title: "Artwork 6",
+    slug: "artwork-6",
     category: "digital",
     size: "TBD",
     medium: "Digital Art",
@@ -89,6 +95,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 7,
     title: "Artwork 7",
+    slug: "artwork-7",
     category: "digital",
     size: "TBD",
     medium: "Digital Art",
@@ -101,6 +108,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 8,
     title: "Artwork 8",
+    slug: "artwork-8",
     category: "digital",
     size: "TBD",
     medium: "Digital Art",
@@ -113,6 +121,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 9,
     title: "Artwork 9",
+    slug: "artwork-9",
     category: "digital",
     size: "TBD",
     medium: "Digital Art",
@@ -125,6 +134,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 10,
     title: "Artwork 10",
+    slug: "artwork-10",
     category: "digital",
     size: "TBD",
     medium: "Digital Art",
@@ -137,6 +147,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 11,
     title: "Artwork 11",
+    slug: "artwork-11",
     category: "digital",
     size: "TBD",
     medium: "Digital Art",
@@ -149,6 +160,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
   {
     id: 12,
     title: "Artwork 12",
+    slug: "artwork-12",
     category: "digital",
     size: "TBD",
     medium: "Digital Art",

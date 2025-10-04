@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useCollection, type Artwork } from '@/lib/CollectionContext';
@@ -12,6 +13,7 @@ interface NewGalleryProps {
 }
 
 export default function NewGallery({ onArtworkSelect }: NewGalleryProps) {
+  const router = useRouter();
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,8 +78,9 @@ export default function NewGallery({ onArtworkSelect }: NewGalleryProps) {
   // Handle artwork click from gallery
   const handleArtworkClick = (imageIndex: number) => {
     const artwork = displayedArtworks[imageIndex];
-    if (artwork) {
-      setSelectedArtwork(artwork);
+    if (artwork && artwork.slug) {
+      // Navigate to expanded artwork view
+      router.push(`/art/${artwork.slug}`);
       if (onArtworkSelect) {
         onArtworkSelect(artwork);
       }

@@ -1,4 +1,6 @@
 import type { Artwork } from '@/types/artwork';
+import { getArtworks as getGalleryArtworks } from '@/lib/artworkData';
+import type { Artwork as GalleryArtwork } from '@/lib/CollectionContext';
 
 // Mock data - replace with actual API calls
 const MOCK_ARTWORKS: Record<string, Artwork> = {
@@ -93,10 +95,47 @@ const MOCK_ARTWORKS: Record<string, Artwork> = {
   },
 };
 
+// Convert gallery artwork to expanded artwork format
+function convertGalleryArtwork(galleryArtwork: GalleryArtwork): Artwork {
+  return {
+    slug: galleryArtwork.slug || `artwork-${galleryArtwork.id}`,
+    title: galleryArtwork.title,
+    year: galleryArtwork.year.toString(),
+    media: galleryArtwork.medium,
+    size: galleryArtwork.size,
+    description: galleryArtwork.description,
+    image: {
+      src: galleryArtwork.imageUrl || '',
+      width: 2000,
+      height: 2000,
+      alt: galleryArtwork.title,
+    },
+    tags: [galleryArtwork.category],
+    palette: [{ hex: galleryArtwork.color }],
+    edition: {
+      type: 'original',
+    },
+  };
+}
+
 export async function getArtwork(slug: string): Promise<Artwork | null> {
   // Simulate network delay
   await new Promise((resolve) => setTimeout(resolve, 100));
-  return MOCK_ARTWORKS[slug] || null;
+
+  // First check mock artworks
+  if (MOCK_ARTWORKS[slug]) {
+    return MOCK_ARTWORKS[slug];
+  }
+
+  // Fallback to gallery artworks
+  const galleryArtworks = await getGalleryArtworks();
+  const galleryArtwork = galleryArtworks.find(a => a.slug === slug);
+
+  if (galleryArtwork) {
+    return convertGalleryArtwork(galleryArtwork);
+  }
+
+  return null;
 }
 
 export async function getAllArtworkSlugs(): Promise<string[]> {
