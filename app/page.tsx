@@ -11,8 +11,7 @@ import Navigation from '@/components/Navigation';
 import CosmicHub from '@/components/CosmicHub';
 import SynthesisChamber from '@/components/SynthesisChamber';
 import AIOracle from '@/components/AIOracle';
-import TrancePrompt from '@/components/TrancePrompt';
-import { useTrance } from '@/lib/TranceContext';
+// Removed TrancePrompt and useTrance - confusing UX
 
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -21,7 +20,6 @@ export default function Home() {
   const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll();
-  const { isTranceMode, enableTranceMode, disableTranceMode } = useTrance();
 
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [1, 0.5, 0.3]);
@@ -68,7 +66,6 @@ export default function Home() {
   return (
     <div ref={containerRef} className="min-h-screen bg-cosmic-void text-cosmic-glow overflow-x-hidden">
       <AIOracle />
-      <TrancePrompt />
 
       {/* Cosmic Grid Background Image - VISIBLE */}
       <div className="fixed inset-0 -z-10">
@@ -280,17 +277,6 @@ export default function Home() {
             </motion.p>
           )}
         </motion.div>
-
-        {/* Trance Mode Toggle */}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => isTranceMode ? disableTranceMode() : enableTranceMode()}
-          className="mb-8 px-6 py-3 border border-cosmic-aura/50 rounded-full text-sm text-cosmic-light hover:bg-cosmic-aura/10 transition-colors"
-          aria-label={isTranceMode ? "Exit trance mode" : "Enter trance mode"}
-        >
-          {isTranceMode ? '🌙 Exit Trance Mode' : '✨ Enter Trance Mode'}
-        </motion.button>
 
         {/* Legal Links */}
         <div className="flex justify-center gap-8 text-sm text-cosmic-light">

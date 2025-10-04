@@ -12,11 +12,6 @@
   --font-mono: var(--font-geist-mono);
 }
 
-/* Trance mode cursor - only active when user opts in */
-.trance-mode * {
-  cursor: none !important;
-}
-
 /* Use standard cursors - SIMPLE AND VISIBLE */
 * {
   cursor: auto;
