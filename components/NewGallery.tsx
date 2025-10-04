@@ -1,88 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect, Suspense } from 'react';
-import { Canvas, useFrame, useLoader } from '@react-three/fiber';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Text, OrbitControls } from '@react-three/drei';
-import type { Mesh } from 'three';
-import { TextureLoader } from 'three';
 import { useCollection, type Artwork } from '@/lib/CollectionContext';
 import { getArtworks } from '@/lib/artworkData';
-import {
-  CHANNELING_GOLD,
-  COSMIC_PURPLE,
-  ASTRAL_PINK,
-  GALLERY_RADIUS,
-  FLOATING_AMPLITUDE,
-  ROTATION_SPEED,
-} from '@/lib/theme';
-
-function FloatingArtwork({ artwork, position, index, onClick, isSelected, isChanneled }: {
-  artwork: Artwork;
-  position: [number, number, number];
-  index: number;
-  onClick: () => void;
-  isSelected: boolean;
-  isChanneled: boolean;
-}) {
-  const meshRef = useRef<Mesh>(null);
-  const [hovered, setHovered] = useState(false);
-
-  // Load texture - using non-null assertion since all artworks in gallery have images
-  const texture = useLoader(TextureLoader, artwork.imageUrl!);
-
-  useFrame((state) => {
-    if (meshRef.current) {
-      // Gentle floating animation with theme constant
-      meshRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime + index) * FLOATING_AMPLITUDE;
-      // Gentle rotation with theme constant
-      meshRef.current.rotation.y += ROTATION_SPEED;
-    }
-  });
-
-  return (
-    <group position={position}>
-      <mesh
-        ref={meshRef}
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick();
-        }}
-        onPointerOver={() => setHovered(true)}
-        onPointerOut={() => setHovered(false)}
-      >
-        <boxGeometry args={[2, 2.5, 0.1]} />
-        <meshStandardMaterial
-          map={texture}
-          color={isChanneled ? CHANNELING_GOLD : "#ffffff"}
-          emissive={isChanneled ? CHANNELING_GOLD : artwork.color}
-          emissiveIntensity={hovered || isSelected ? 0.3 : isChanneled ? 0.2 : 0.1}
-          metalness={0.3}
-          roughness={0.7}
-        />
-      </mesh>
-
-      {/* Title text above artwork */}
-      <Text
-        position={[0, 1.5, 0.1]}
-        fontSize={0.2}
-        color={ASTRAL_PINK}
-        anchorX="center"
-        anchorY="middle"
-      >
-        {artwork.title}
-      </Text>
-
-      {/* Channel indicator - Golden ring */}
-      {isChanneled && (
-        <mesh position={[0, 0, 0.2]}>
-          <torusGeometry args={[1.2, 0.05, 16, 100]} />
-          <meshBasicMaterial color={CHANNELING_GOLD} />
-        </mesh>
-      )}
-    </group>
-  );
-}
+import InfiniteGallery from '@/components/InfiniteGallery';
 
 interface NewGalleryProps {
   onArtworkSelect?: (artwork: Artwork) => void;
@@ -135,20 +57,6 @@ export default function NewGallery({ onArtworkSelect }: NewGalleryProps) {
     }
   }, [selectedArtwork]);
 
-  // Arrange artworks in a circle with vertical wave and depth variation
-  const getArtworkPosition = (index: number): [number, number, number] => {
-    const angle = (index / artworks.length) * Math.PI * 2;
-    const x = Math.cos(angle) * GALLERY_RADIUS;
-    const y = Math.sin(angle) * GALLERY_RADIUS * 0.5; // Vertical compression for ellipse effect
-    const z = Math.sin(index) * 2; // Depth variation
-    return [x, y, z];
-  };
-
-  const handleArtworkClick = (artwork: Artwork) => {
-    setSelectedArtwork(artwork);
-    onArtworkSelect?.(artwork);
-  };
-
   const handleChannelArtwork = () => {
     if (selectedArtwork) {
       channelArtwork(selectedArtwork);
@@ -156,6 +64,14 @@ export default function NewGallery({ onArtworkSelect }: NewGalleryProps) {
       // setSelectedArtwork(null);
     }
   };
+
+  // Extract image URLs from artworks
+  const galleryImages = artworks
+    .filter(artwork => artwork.imageUrl)
+    .map(artwork => ({
+      src: artwork.imageUrl!,
+      alt: artwork.title
+    }));
 
   return (
     <section id="gallery" className="relative min-h-screen py-24" aria-label="Ethereal Gallery - Interactive 3D artwork collection">
@@ -168,48 +84,21 @@ export default function NewGallery({ onArtworkSelect }: NewGalleryProps) {
             </div>
           </div>
         ) : (
-          <Suspense fallback={
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <div className="animate-spin text-6xl mb-4">✦</div>
-                <p className="text-cosmic-light">Initializing 3D space...</p>
-              </div>
-            </div>
-          }>
-            <Canvas
-              camera={{ position: [0, 0, 15], fov: 75 }}
-              gl={{ antialias: true, alpha: true }}
-            >
-              <ambientLight intensity={0.4} />
-              <directionalLight position={[5, 5, 5]} intensity={0.8} color={COSMIC_PURPLE} />
-              <pointLight position={[-5, -5, -5]} intensity={0.5} color={CHANNELING_GOLD} />
-
-              {/* OrbitControls - drag to rotate, auto-rotates when no artwork selected */}
-              <OrbitControls
-                enableZoom={false}
-                enablePan={false}
-                autoRotate={!selectedArtwork}
-                autoRotateSpeed={0.3}
-                maxPolarAngle={Math.PI / 1.5}
-                minPolarAngle={Math.PI / 2.5}
-              />
-
-              {artworks.map((artwork, index) => (
-                <Suspense key={artwork.id} fallback={null}>
-                  <FloatingArtwork
-                    artwork={artwork}
-                    position={getArtworkPosition(index)}
-                    index={index}
-                    onClick={() => handleArtworkClick(artwork)}
-                    isSelected={selectedArtwork?.id === artwork.id}
-                    isChanneled={isChanneled(artwork.id)}
-                  />
-                </Suspense>
-              ))}
-
-              <fog attach="fog" args={['#0a0a0a', 10, 30]} />
-            </Canvas>
-          </Suspense>
+          <InfiniteGallery
+            images={galleryImages}
+            className="h-full w-full"
+            speed={0.8}
+            visibleCount={12}
+            fadeSettings={{
+              fadeIn: { start: 0.05, end: 0.25 },
+              fadeOut: { start: 0.4, end: 0.43 },
+            }}
+            blurSettings={{
+              blurIn: { start: 0.0, end: 0.1 },
+              blurOut: { start: 0.4, end: 0.43 },
+              maxBlur: 8.0,
+            }}
+          />
         )}
       </div>
 
@@ -307,7 +196,7 @@ export default function NewGallery({ onArtworkSelect }: NewGalleryProps) {
             transition={{ delay: 1 }}
             className="text-cosmic-light text-sm"
           >
-            Click artworks to explore • Drag to rotate • Arrow keys to navigate
+            Scroll or use arrow keys to navigate • Hover to interact
           </motion.p>
         </div>
       )}
