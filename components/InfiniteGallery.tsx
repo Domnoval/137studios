@@ -54,6 +54,8 @@ interface InfiniteGalleryProps {
     className?: string;
     /** Optional style for outer container */
     style?: React.CSSProperties;
+    /** Callback when an image is clicked, receives the original image index */
+    onImageClick?: (imageIndex: number) => void;
 }
 
 interface PlaneData {
@@ -169,11 +171,13 @@ function ImagePlane({
     position,
     scale,
     material,
+    onClick,
 }: {
     texture: THREE.Texture;
     position: [number, number, number];
     scale: [number, number, number];
     material: THREE.ShaderMaterial;
+    onClick?: () => void;
 }) {
     const meshRef = useRef<THREE.Mesh>(null);
     const [isHovered, setIsHovered] = useState(false);
@@ -198,6 +202,8 @@ function ImagePlane({
             material={material}
             onPointerEnter={() => setIsHovered(true)}
             onPointerLeave={() => setIsHovered(false)}
+            onClick={onClick}
+            style={{ cursor: onClick ? 'pointer' : 'default' }}
         >
             <planeGeometry args={[1, 1, 32, 32]} />
         </mesh>
@@ -217,10 +223,15 @@ function GalleryScene({
         blurOut: { start: 0.9, end: 1.0 },
         maxBlur: 3.0,
     },
+    onImageClick,
 }: Omit<InfiniteGalleryProps, 'className' | 'style'>) {
     const [scrollVelocity, setScrollVelocity] = useState(0);
     const [autoPlay, setAutoPlay] = useState(true);
+    const [cameraRotation, setCameraRotation] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const dragStart = useRef({ x: 0, y: 0 });
     const lastInteraction = useRef(Date.now());
+    const { camera } = useThree();
 
     // Normalize images to objects
     const normalizedImages = useMemo(
@@ -319,18 +330,50 @@ function GalleryScene({
         [speed]
     );
 
+    // Handle mouse drag for camera rotation
+    const handleMouseDown = useCallback((event: MouseEvent) => {
+        setIsDragging(true);
+        dragStart.current = { x: event.clientX, y: event.clientY };
+        setAutoPlay(false);
+        lastInteraction.current = Date.now();
+    }, []);
+
+    const handleMouseMove = useCallback((event: MouseEvent) => {
+        if (!isDragging) return;
+
+        const deltaX = event.clientX - dragStart.current.x;
+        const deltaY = event.clientY - dragStart.current.y;
+
+        setCameraRotation(prev => ({
+            x: prev.x + deltaY * 0.002,
+            y: prev.y + deltaX * 0.002
+        }));
+
+        dragStart.current = { x: event.clientX, y: event.clientY };
+    }, [isDragging]);
+
+    const handleMouseUp = useCallback(() => {
+        setIsDragging(false);
+    }, []);
+
     useEffect(() => {
         const canvas = document.querySelector('canvas');
         if (canvas) {
             canvas.addEventListener('wheel', handleWheel, { passive: false });
+            canvas.addEventListener('mousedown', handleMouseDown);
             document.addEventListener('keydown', handleKeyDown);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
 
             return () => {
                 canvas.removeEventListener('wheel', handleWheel);
+                canvas.removeEventListener('mousedown', handleMouseDown);
                 document.removeEventListener('keydown', handleKeyDown);
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handleMouseUp);
             };
         }
-    }, [handleWheel, handleKeyDown]);
+    }, [handleWheel, handleKeyDown, handleMouseDown, handleMouseMove, handleMouseUp]);
 
     // Auto-play logic
     useEffect(() => {
@@ -343,6 +386,10 @@ function GalleryScene({
     }, []);
 
     useFrame((state, delta) => {
+        // Apply camera rotation from drag
+        camera.rotation.x = cameraRotation.x;
+        camera.rotation.y = cameraRotation.y;
+
         // Apply auto-play
         if (autoPlay) {
             setScrollVelocity((prev) => prev + 0.3 * delta);
@@ -495,6 +542,7 @@ function GalleryScene({
                         position={[plane.x, plane.y, worldZ]} // Position planes relative to camera center
                         scale={scale}
                         material={material}
+                        onClick={onImageClick ? () => onImageClick(plane.imageIndex) : undefined}
                     />
                 );
             })}
@@ -544,6 +592,7 @@ export default function InfiniteGallery({
         blurOut: { start: 0.4, end: 0.43 },
         maxBlur: 8.0,
     },
+    onImageClick,
 }: InfiniteGalleryProps) {
     const [webglSupported, setWebglSupported] = useState(true);
 
@@ -579,6 +628,7 @@ export default function InfiniteGallery({
                     images={images}
                     fadeSettings={fadeSettings}
                     blurSettings={blurSettings}
+                    onImageClick={onImageClick}
                 />
             </Canvas>
         </div>

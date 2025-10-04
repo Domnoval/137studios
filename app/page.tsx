@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import Image from 'next/image';
 import SacredGeometry from '@/components/SacredGeometry';
 import HeroSection from '@/components/HeroSection';
 import NewGallery from '@/components/NewGallery';
@@ -70,10 +71,24 @@ export default function Home() {
       <AIOracle />
       <TrancePrompt />
 
+      {/* Cosmic Grid Background Image */}
+      <div className="fixed inset-0 -z-10">
+        <Image
+          src="/cosmic-grid-bg.jpg"
+          alt="Cosmic perspective grid background"
+          fill
+          className="object-cover"
+          quality={85}
+          priority
+        />
+        {/* Subtle overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-b from-cosmic-void/30 via-transparent to-cosmic-void/50" />
+      </div>
+
       {/* Sacred Geometry Background */}
       <motion.div
-        className="fixed inset-0 z-0"
-        style={{ y: backgroundY, opacity }}
+        className="fixed inset-0 z-0 pointer-events-none"
+        style={{ y: backgroundY, opacity: useTransform(scrollYProgress, [0, 0.5, 1], [0.3, 0.2, 0.1]) }}
       >
         <SacredGeometry mousePosition={mousePosition} />
       </motion.div>
@@ -88,6 +103,156 @@ export default function Home() {
 
         {/* New Gallery with Collection */}
         <NewGallery />
+
+        {/* Installations Section */}
+        <section id="installations" className="relative min-h-screen py-24 px-8">
+          <div className="max-w-6xl mx-auto">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-5xl md:text-7xl font-bold text-center mb-16 bg-gradient-to-r from-cosmic-plasma via-cosmic-aura to-mystic-gold bg-clip-text text-transparent"
+            >
+              Immersive Installations
+            </motion.h2>
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="text-center max-w-3xl mx-auto"
+            >
+              <p className="text-cosmic-light text-lg mb-8 leading-relaxed">
+                Transform spaces into portals of consciousness. Our installations merge digital art with physical environments, creating multidimensional experiences that dissolve the boundaries between observer and observed.
+              </p>
+              <p className="text-cosmic-light/70 text-base">
+                From intimate gallery spaces to large-scale public works, each installation is custom-designed to channel the unique energy of its environment. Combining projection mapping, interactive sensors, and generative AI, these living artworks evolve with their audience.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="mt-12 px-8 py-4 bg-gradient-to-r from-cosmic-plasma to-cosmic-aura rounded-full text-white font-bold text-lg"
+                onClick={() => {
+                  const contactSection = document.querySelector('#contact');
+                  contactSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Commission an Installation
+              </motion.button>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Process Section */}
+        <section id="process" className="relative min-h-screen py-24 px-8">
+          <div className="max-w-6xl mx-auto">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-5xl md:text-7xl font-bold text-center mb-16 bg-gradient-to-r from-cosmic-plasma via-cosmic-aura to-mystic-gold bg-clip-text text-transparent"
+            >
+              The Creative Process
+            </motion.h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              {[
+                {
+                  title: "Channel",
+                  icon: "✨",
+                  description: "Tuning into frequencies beyond the visible spectrum, each piece begins as pure energy waiting to be translated into form."
+                },
+                {
+                  title: "Synthesize",
+                  icon: "🌀",
+                  description: "AI and human consciousness collaborate, merging technical precision with intuitive flow to birth new visual realities."
+                },
+                {
+                  title: "Manifest",
+                  icon: "🎨",
+                  description: "Digital creation meets physical form through prints, installations, and immersive experiences that transcend traditional art."
+                }
+              ].map((step, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.2 }}
+                  className="text-center p-8 rounded-lg bg-cosmic-astral/30 backdrop-blur-sm border border-cosmic-aura/20"
+                >
+                  <div className="text-6xl mb-4">{step.icon}</div>
+                  <h3 className="text-2xl font-bold text-cosmic-glow mb-4">{step.title}</h3>
+                  <p className="text-cosmic-light/80 leading-relaxed">{step.description}</p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Contact Section */}
+        <section id="contact" className="relative min-h-screen py-24 px-8 flex items-center justify-center">
+          <div className="max-w-2xl mx-auto w-full">
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-5xl md:text-7xl font-bold text-center mb-16 bg-gradient-to-r from-cosmic-plasma via-cosmic-aura to-mystic-gold bg-clip-text text-transparent"
+            >
+              Connect
+            </motion.h2>
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="bg-cosmic-astral/30 backdrop-blur-sm border border-cosmic-aura/20 rounded-2xl p-8"
+            >
+              <form className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-cosmic-light mb-2">Name</label>
+                  <input
+                    type="text"
+                    id="name"
+                    className="w-full px-4 py-3 bg-cosmic-void/50 border border-cosmic-aura/30 rounded-lg text-cosmic-glow focus:outline-none focus:border-cosmic-plasma transition-colors"
+                    placeholder="Your name"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="email" className="block text-cosmic-light mb-2">Email</label>
+                  <input
+                    type="email"
+                    id="email"
+                    className="w-full px-4 py-3 bg-cosmic-void/50 border border-cosmic-aura/30 rounded-lg text-cosmic-glow focus:outline-none focus:border-cosmic-plasma transition-colors"
+                    placeholder="your@email.com"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="message" className="block text-cosmic-light mb-2">Message</label>
+                  <textarea
+                    id="message"
+                    rows={6}
+                    className="w-full px-4 py-3 bg-cosmic-void/50 border border-cosmic-aura/30 rounded-lg text-cosmic-glow focus:outline-none focus:border-cosmic-plasma transition-colors resize-none"
+                    placeholder="Tell us about your project or inquiry..."
+                  />
+                </div>
+                <motion.button
+                  type="submit"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full py-4 bg-gradient-to-r from-cosmic-plasma to-cosmic-aura rounded-full text-white font-bold text-lg"
+                >
+                  Send Message
+                </motion.button>
+              </form>
+              <div className="mt-8 pt-8 border-t border-cosmic-aura/20 text-center">
+                <p className="text-cosmic-light mb-4">Or reach out directly:</p>
+                <a href="mailto:contact@137studios.com" className="text-cosmic-plasma hover:text-cosmic-glow transition-colors">
+                  contact@137studios.com
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        </section>
       </main>
 
       {/* Cosmic Hub - Floating Collection */}

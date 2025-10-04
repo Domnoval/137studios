@@ -24,7 +24,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "$299",
     description: "A mystical journey through violet dimensions. Captured with cosmic intention, this piece channels the frequency of transformation and spiritual awakening.",
     color: "#9333ea",
-    imageUrl: "/artwork/art-1.png.jpg"
+    imageUrl: "/artwork/art-1.png.webp"
   },
   {
     id: 2,
@@ -36,7 +36,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "$249",
     description: "Electric turquoise energy flows through ethereal planes. A visual meditation on clarity, communication, and the infinite now.",
     color: "#00ffff",
-    imageUrl: "/artwork/art-2.png.jpg"
+    imageUrl: "/artwork/art-2.png.webp"
   },
   {
     id: 3,
@@ -48,7 +48,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "$399",
     description: "In the darkness between stars, creation whispers. This deep cosmic exploration invites you to dance with the unknown and embrace the mystery.",
     color: "#1a0033",
-    imageUrl: "/artwork/art-3.png.jpg"
+    imageUrl: "/artwork/art-3.png.webp"
   },
   {
     id: 4,
@@ -60,7 +60,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "$329",
     description: "Radiant amber light channels the frequency of abundance and divine timing. A sacred geometry of warmth, wisdom, and celestial alignment.",
     color: "#fbbf24",
-    imageUrl: "/artwork/art-4.png.jpg"
+    imageUrl: "/artwork/art-4.png.webp"
   },
   {
     id: 5,
@@ -72,7 +72,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "$199",
     description: "A gateway woven from violet threads of consciousness. Step through the crystalline veil and explore dimensions beyond the ordinary.",
     color: "#6b46c1",
-    imageUrl: "/artwork/art-5.png.png"
+    imageUrl: "/artwork/art-5.png.webp"
   },
   {
     id: 6,
@@ -84,7 +84,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "Contact",
     description: "Update this description with details about your artwork.",
     color: "#e9d5ff",
-    imageUrl: "/artwork/art-6.png.jpg"
+    imageUrl: "/artwork/art-6.png.webp"
   },
   {
     id: 7,
@@ -96,7 +96,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "Contact",
     description: "Update this description with details about your artwork.",
     color: "#ec4899",
-    imageUrl: "/artwork/art-7.png.jpg"
+    imageUrl: "/artwork/art-7.png.webp"
   },
   {
     id: 8,
@@ -108,7 +108,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "Contact",
     description: "Update this description with details about your artwork.",
     color: "#14b8a6",
-    imageUrl: "/artwork/art-8.png.png"
+    imageUrl: "/artwork/art-8.png.webp"
   },
   {
     id: 9,
@@ -120,7 +120,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "Contact",
     description: "Update this description with details about your artwork.",
     color: "#f59e0b",
-    imageUrl: "/artwork/art-9.png.png"
+    imageUrl: "/artwork/art-9.png.webp"
   },
   {
     id: 10,
@@ -132,7 +132,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "Contact",
     description: "Update this description with details about your artwork.",
     color: "#8b5cf6",
-    imageUrl: "/artwork/art-10.png.png"
+    imageUrl: "/artwork/art-10.png.webp"
   },
   {
     id: 11,
@@ -144,7 +144,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "Contact",
     description: "Update this description with details about your artwork.",
     color: "#3b82f6",
-    imageUrl: "/artwork/art-11.png.png"
+    imageUrl: "/artwork/art-11.png.webp"
   },
   {
     id: 12,
@@ -156,7 +156,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
     price: "Contact",
     description: "Update this description with details about your artwork.",
     color: "#ef4444",
-    imageUrl: "/artwork/art-12.png.jpg"
+    imageUrl: "/artwork/art-12.png.webp"
   }
 ];
 
@@ -175,9 +175,7 @@ const PLACEHOLDER_ARTWORKS: Artwork[] = [
  * ```
  */
 export async function getArtworks(): Promise<Artwork[]> {
-  // Simulate network delay (remove in production)
-  await new Promise(resolve => setTimeout(resolve, 100));
-
+  // No artificial delay - optimized for production
   return PLACEHOLDER_ARTWORKS;
 }
 

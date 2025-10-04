@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image';
 import { useCollection, type Artwork } from '@/lib/CollectionContext';
 import { getArtworks } from '@/lib/artworkData';
 import InfiniteGallery from '@/components/InfiniteGallery';
@@ -65,13 +66,23 @@ export default function NewGallery({ onArtworkSelect }: NewGalleryProps) {
     }
   };
 
-  // Extract image URLs from artworks
-  const galleryImages = artworks
-    .filter(artwork => artwork.imageUrl)
-    .map(artwork => ({
-      src: artwork.imageUrl!,
-      alt: artwork.title
-    }));
+  // Extract image URLs from artworks (only artworks with images)
+  const displayedArtworks = artworks.filter(artwork => artwork.imageUrl);
+  const galleryImages = displayedArtworks.map(artwork => ({
+    src: artwork.imageUrl!,
+    alt: artwork.title
+  }));
+
+  // Handle artwork click from gallery
+  const handleArtworkClick = (imageIndex: number) => {
+    const artwork = displayedArtworks[imageIndex];
+    if (artwork) {
+      setSelectedArtwork(artwork);
+      if (onArtworkSelect) {
+        onArtworkSelect(artwork);
+      }
+    }
+  };
 
   return (
     <section id="gallery" className="relative min-h-screen py-24" aria-label="Ethereal Gallery - Interactive 3D artwork collection">
@@ -98,43 +109,47 @@ export default function NewGallery({ onArtworkSelect }: NewGalleryProps) {
               blurOut: { start: 0.4, end: 0.43 },
               maxBlur: 8.0,
             }}
+            onImageClick={handleArtworkClick}
           />
         )}
       </div>
 
-      {/* Artwork Details Panel */}
+      {/* Artwork Details Panel - ENHANCED */}
       <AnimatePresence>
         {selectedArtwork && (
           <motion.div
             initial={{ opacity: 0, x: 400 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 400 }}
-            className="fixed right-0 top-0 bottom-0 w-full md:max-w-md bg-gradient-to-br from-cosmic-nebula/95 to-cosmic-astral/95 backdrop-blur-md border-l border-cosmic-aura z-30 overflow-y-auto"
+            className="fixed right-0 top-0 bottom-0 w-full md:max-w-2xl bg-gradient-to-br from-cosmic-nebula/95 to-cosmic-astral/95 backdrop-blur-md border-l border-cosmic-aura z-30 overflow-y-auto"
           >
-            <div className="p-8">
+            <div className="p-6 md:p-10">
               {/* Close button - auto-focused for accessibility */}
               <button
                 ref={closeButtonRef}
                 onClick={() => setSelectedArtwork(null)}
-                className="absolute top-4 right-4 text-cosmic-light hover:text-cosmic-glow text-2xl focus:outline-none focus:ring-2 focus:ring-cosmic-aura rounded"
+                className="absolute top-6 right-6 text-cosmic-light hover:text-cosmic-glow text-2xl focus:outline-none focus:ring-2 focus:ring-cosmic-aura z-10 bg-cosmic-void/50 w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-sm"
                 aria-label="Close details (press Escape)"
               >
                 ✕
               </button>
 
-              {/* Artwork preview */}
+              {/* Artwork preview - BIGGER, CENTERED, FULL DISPLAY */}
               <div
-                className="w-full h-64 rounded-lg mb-6 flex items-center justify-center overflow-hidden relative"
+                className="w-full aspect-square rounded-xl mb-8 flex items-center justify-center overflow-hidden relative"
                 style={{
                   backgroundColor: selectedArtwork.color,
-                  boxShadow: `0 0 40px ${selectedArtwork.color}`,
+                  boxShadow: `0 0 80px ${selectedArtwork.color}40`,
                 }}
               >
                 {selectedArtwork.imageUrl ? (
-                  <img
+                  <Image
                     src={selectedArtwork.imageUrl}
                     alt={selectedArtwork.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-contain p-4"
+                    sizes="(max-width: 768px) 100vw, 700px"
+                    priority
                   />
                 ) : (
                   <div className="text-6xl opacity-50">✦</div>
@@ -196,7 +211,7 @@ export default function NewGallery({ onArtworkSelect }: NewGalleryProps) {
             transition={{ delay: 1 }}
             className="text-cosmic-light text-sm"
           >
-            Scroll or use arrow keys to navigate • Hover to interact
+            Scroll or use arrow keys to navigate • Click artwork to view details
           </motion.p>
         </div>
       )}
