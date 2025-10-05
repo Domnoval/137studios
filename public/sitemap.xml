@@ -1,141 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-
-  <!-- Homepage -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Main Pages -->
   <url>
     <loc>https://137studios.com/</loc>
-    <lastmod>2025-10-04</lastmod>
+    <lastmod>2025-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- Artwork Detail Pages -->
   <url>
-    <loc>https://137studios.com/art/purple-dreamscape</loc>
-    <lastmod>2025-10-04</lastmod>
+    <loc>https://137studios.com/artifact-viewer</loc>
+    <lastmod>2025-10-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-1.png.webp</image:loc>
-      <image:title>Purple Dreamscape</image:title>
-      <image:caption>A mystical journey through violet dimensions</image:caption>
-    </image:image>
+  </url>
+
+  <!-- Art Gallery Pages -->
+  <url>
+    <loc>https://137studios.com/art/golden-frequency</loc>
+    <lastmod>2025-10-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://137studios.com/art/cyan-consciousness</loc>
-    <lastmod>2025-10-04</lastmod>
+    <lastmod>2025-10-05</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-2.png.webp</image:loc>
-      <image:title>Cyan Consciousness</image:title>
-      <image:caption>Electric turquoise energy flows through ethereal planes</image:caption>
-    </image:image>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://137studios.com/art/purple-dreamscape</loc>
+    <lastmod>2025-10-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://137studios.com/art/void-symphony</loc>
-    <lastmod>2025-10-04</lastmod>
+    <lastmod>2025-10-05</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-3.png.webp</image:loc>
-      <image:title>Void Symphony</image:title>
-    </image:image>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- Admin -->
+  <url>
+    <loc>https://137studios.com/admin/login</loc>
+    <lastmod>2025-10-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Legal Pages -->
+  <url>
+    <loc>https://137studios.com/privacy</loc>
+    <lastmod>2025-10-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
 
   <url>
-    <loc>https://137studios.com/art/golden-frequency</loc>
-    <lastmod>2025-10-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-4.png.webp</image:loc>
-      <image:title>Golden Frequency</image:title>
-    </image:image>
+    <loc>https://137studios.com/terms</loc>
+    <lastmod>2025-10-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
-
-  <url>
-    <loc>https://137studios.com/art/amethyst-portal</loc>
-    <lastmod>2025-10-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-5.png.webp</image:loc>
-      <image:title>Amethyst Portal</image:title>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://137studios.com/art/artwork-6</loc>
-    <lastmod>2025-10-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-6.png.webp</image:loc>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://137studios.com/art/artwork-7</loc>
-    <lastmod>2025-10-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-7.png.webp</image:loc>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://137studios.com/art/artwork-8</loc>
-    <lastmod>2025-10-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-8.png.webp</image:loc>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://137studios.com/art/artwork-9</loc>
-    <lastmod>2025-10-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-9.png.webp</image:loc>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://137studios.com/art/artwork-10</loc>
-    <lastmod>2025-10-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-10.png.webp</image:loc>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://137studios.com/art/artwork-11</loc>
-    <lastmod>2025-10-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-11.png.webp</image:loc>
-    </image:image>
-  </url>
-
-  <url>
-    <loc>https://137studios.com/art/artwork-12</loc>
-    <lastmod>2025-10-04</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-    <image:image>
-      <image:loc>https://137studios.com/artwork/art-12.png.webp</image:loc>
-    </image:image>
-  </url>
-
 </urlset>
