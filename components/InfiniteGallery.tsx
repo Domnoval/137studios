@@ -203,7 +203,6 @@ function ImagePlane({
             onPointerEnter={() => setIsHovered(true)}
             onPointerLeave={() => setIsHovered(false)}
             onClick={onClick}
-            style={{ cursor: onClick ? 'pointer' : 'default' }}
         >
             <planeGeometry args={[1, 1, 32, 32]} />
         </mesh>

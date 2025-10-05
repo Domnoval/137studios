@@ -132,3 +132,17 @@ body {
 .animate-spin-slow {
   animation: spin-slow 60s linear infinite;
 }
+
+/* Floating particle animation for retro console */
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+  }
+}
+
+.animate-float-particle {
+  animation: float-particle 10s ease-in-out infinite;
+}

@@ -9,6 +9,7 @@ import RelatedFilmstrip from '@/components/artwork/RelatedFilmstrip';
 import OverlayToggles from '@/components/artwork/OverlayToggles';
 import ShareButton from '@/components/artwork/ShareButton';
 import HotkeyGuide from '@/components/artwork/HotkeyGuide';
+import RetroConsoleBackground from '@/components/artwork/RetroConsoleBackground';
 import { getArtwork } from '@/lib/artwork-data';
 import type { Artwork, TransformState, OverlayType, ViewState } from '@/types/artwork';
 
@@ -187,8 +188,9 @@ export default function ArtworkPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-[var(--bg)]">
-        <div className="text-center">
+      <div className="relative flex items-center justify-center h-screen overflow-hidden">
+        <RetroConsoleBackground />
+        <div className="text-center relative z-10">
           <div className="animate-spin text-6xl mb-4 text-[var(--accent)]">✦</div>
           <p className="text-[var(--muted)]">Loading artwork...</p>
         </div>
@@ -201,9 +203,12 @@ export default function ArtworkPage({ params }: PageProps) {
   }
 
   return (
-    <main className="h-screen flex flex-col lg:grid lg:grid-cols-[1fr_400px] lg:grid-rows-[1fr_auto] overflow-hidden bg-[var(--bg)]">
+    <main className="relative h-screen flex flex-col lg:grid lg:grid-cols-[1fr_400px] lg:grid-rows-[1fr_auto] overflow-hidden">
+      {/* Retro Console Background */}
+      <RetroConsoleBackground />
+
       {/* Top controls - desktop */}
-      <div className="hidden lg:flex items-center justify-between px-6 py-4 bg-[var(--bg)] border-b border-[var(--border)] lg:col-span-2">
+      <div className="hidden lg:flex items-center justify-between px-6 py-4 bg-transparent border-b border-[var(--border)]/20 lg:col-span-2 relative z-10">
         <button
           onClick={() => router.push('/')}
           className="text-sm text-[var(--muted)] hover:text-[var(--fg)] transition-colors"
@@ -230,7 +235,7 @@ export default function ArtworkPage({ params }: PageProps) {
       </div>
 
       {/* Main stage */}
-      <div className="relative flex-1 lg:row-start-2 lg:row-end-3">
+      <div className="relative flex-1 lg:row-start-2 lg:row-end-3 z-0">
         <ArtworkStage
           image={artwork.image}
           overlay={viewState.overlay}
@@ -239,32 +244,36 @@ export default function ArtworkPage({ params }: PageProps) {
       </div>
 
       {/* Side panel - desktop */}
-      <div className="hidden lg:block lg:row-start-2 lg:row-end-3 lg:col-start-2">
-        <ArtworkMetaPanel
-          artwork={artwork}
-          onColorFilter={handleColorFilter}
-          onTagClick={handleTagClick}
-          onSeriesClick={handleSeriesClick}
-        />
+      <div className="hidden lg:block lg:row-start-2 lg:row-end-3 lg:col-start-2 relative z-10">
+        <div className="h-full bg-black/40 backdrop-blur-md border-l border-[var(--border)]/20">
+          <ArtworkMetaPanel
+            artwork={artwork}
+            onColorFilter={handleColorFilter}
+            onTagClick={handleTagClick}
+            onSeriesClick={handleSeriesClick}
+          />
+        </div>
       </div>
 
       {/* Related filmstrip - desktop */}
       {artwork.related && artwork.related.length > 0 && (
-        <div className="hidden lg:block lg:col-span-2 lg:row-start-3">
-          <RelatedFilmstrip
-            related={artwork.related}
-            onSelect={handleRelatedSelect}
-            selectedIndex={viewState.relatedIndex}
-          />
+        <div className="hidden lg:block lg:col-span-2 lg:row-start-3 relative z-10">
+          <div className="bg-black/40 backdrop-blur-md border-t border-[var(--border)]/20">
+            <RelatedFilmstrip
+              related={artwork.related}
+              onSelect={handleRelatedSelect}
+              selectedIndex={viewState.relatedIndex}
+            />
+          </div>
         </div>
       )}
 
       {/* Mobile controls */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 p-4 bg-gradient-to-b from-[var(--bg)] to-transparent">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 p-4 bg-gradient-to-b from-black/60 to-transparent backdrop-blur-sm">
         <div className="flex items-center justify-between">
           <button
             onClick={() => router.push('/')}
-            className="w-10 h-10 flex items-center justify-center bg-[var(--glass)] backdrop-blur-sm rounded-full text-[var(--fg)]"
+            className="w-10 h-10 flex items-center justify-center bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-[var(--fg)]"
             aria-label="Back to gallery"
           >
             ←

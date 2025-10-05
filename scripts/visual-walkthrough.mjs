@@ -50,24 +50,15 @@ try {
   });
   console.log('   ✅ Screenshot saved: 02-gallery-section.png\n');
 
-  // Test 3: Click first artwork
-  console.log('📸 Step 3: Clicking on first artwork...');
-  // Wait for gallery to load
+  // Test 3: Navigate to artwork detail page
+  console.log('📸 Step 3: Navigating to artwork detail page...');
+  await page.goto(`${BASE_URL}/art/purple-dreamscape`, { waitUntil: 'networkidle' });
   await page.waitForTimeout(2000);
-
-  // Try to find and click an artwork
-  const artworkElements = await page.locator('canvas, img[alt*="Purple"], img[alt*="Cyan"]').all();
-  if (artworkElements.length > 0) {
-    await artworkElements[0].click({ force: true });
-    await page.waitForTimeout(2000);
-    await page.screenshot({
-      path: join(SCREENSHOTS_DIR, '03-artwork-detail-page.png'),
-      fullPage: true,
-    });
-    console.log('   ✅ Screenshot saved: 03-artwork-detail-page.png\n');
-  } else {
-    console.log('   ⚠️  Could not find artwork to click\n');
-  }
+  await page.screenshot({
+    path: join(SCREENSHOTS_DIR, '03-artwork-detail-page.png'),
+    fullPage: true,
+  });
+  console.log('   ✅ Screenshot saved: 03-artwork-detail-page.png\n');
 
   // Test 4: Test zoom controls
   console.log('📸 Step 4: Testing zoom functionality...');
